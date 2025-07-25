@@ -34,7 +34,7 @@ const registerAlumini = async (req, res) => {
       where: {
         OR: [
           { reg_no },
-          { mail },
+          { dob: new Date(dob) },
         ]
       }
     })
@@ -49,9 +49,9 @@ const registerAlumini = async (req, res) => {
 
     const existingAlumini = await prisma.ExistingAlumini.findFirst({
       where: {
-        OR: [
+        AND: [
           { reg_no },
-          { mail },
+          { dob: new Date(dob) },
         ]
       }
     });
@@ -197,9 +197,9 @@ const registerStudent = async (req, res) => {
     // Check if Student already exists
     const duplicateStudent = await prisma.Student.findFirst({
       where: {
-        OR: [
+        AND: [
           { reg_no },
-          { mail },
+          { dob: new Date(dob) },
         ]
       }
     })
@@ -215,9 +215,9 @@ const registerStudent = async (req, res) => {
     //check if the student is in existing student table 
     const existingStudent = await prisma.ExistingStudent.findFirst({
       where: {
-        OR: [
+        AND: [
           { reg_no },
-          { mail },
+          { dob: new Date(dob) },
         ]
       }
     });
@@ -345,6 +345,186 @@ const loginStudent = async (req, res) => {
 
 // ---------------------------------------------------------------------
 
+
+// Teacher Registration
+const registerTeacher = async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { name, reg_no, ph_no, dob, password, mail } = req.body;
+    
+    // Check if Teacher already exists
+    const duplicateTeacher = await prisma.teacher.findFirst({
+      where: {
+        OR: [
+          { reg_no },
+          { dob: new Date(dob) },
+        ]
+      }
+    })
+
+    if(duplicateTeacher)
+    {
+      return res.status(401).json({
+        success: false,
+        message: 'already Registered, login your account'
+      })
+    }
+
+    const existingTeacher = await prisma.existingTeacher.findFirst({
+      where: {
+        AND: [
+          { reg_no },
+          { dob: new Date(dob) },
+        ]
+      }
+    });
+    
+    if(!existingTeacher){
+      return res.status(401).json({
+        success: false,
+        message: 'your data not in existing teacher table'
+      })
+    }
+    console.log(`existing ${existingTeacher}`)
+    
+    // Hash password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    
+    // Insert new teacher
+    const teacher = await prisma.teacher.create({
+      data: {
+        name,
+        reg_no,
+        ph_no,
+        mail,
+        dob: new Date(dob),
+        password: hashedPassword
+      }
+    });
+    
+    // Generate JWT token
+    const token = generateToken(teacher.id);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Teacher registered successfully',
+      data: {
+        teacher: {
+          id: teacher.id,
+          name: teacher.name,
+          reg_no: teacher.reg_no,
+          is_verified: teacher.is_verified
+        },
+        token
+      }
+    });
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+// Teacher login
+const loginTeacher = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { reg_no, password } = req.body;
+
+    // Find teacher by register number
+    const teacher = await prisma.teacher.findUnique({
+      where: { reg_no }
+    });
+    console.log('teacher found:', teacher);
+
+    if (!teacher) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, teacher.password);
+    console.log('Password valid:', isPasswordValid);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Debug JWT secret
+    console.log('JWT_SECRET:', process.env.JWT_SECRET);
+    console.log('JWT_EXPIRE:', process.env.JWT_EXPIRE);
+
+    // Generate JWT token
+    const token = generateToken(teacher.id);
+
+    res.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        teacher: {
+          id: teacher.id,
+          name: teacher.name,
+          reg_no: teacher.reg_no,
+          ph_no: teacher.ph_no,
+          dob: teacher.dob,
+          is_verified: teacher.is_verified
+        },
+        token
+      }
+    });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Student Verification (matches the form data)
 const verifyStudent = async (req, res) => {
   try {
@@ -442,12 +622,17 @@ const getProfile = async (req, res) => {
 };
 
 module.exports = {
-  registerStudent,
+  
+  registerAlumini,
   loginAlumini,
-
-
+  
+  registerStudent,
   loginStudent,
-  verifyStudent,
+  
+  registerTeacher,
+  loginTeacher,
+  
+  
   getProfile,
-  registerAlumini
+  verifyStudent
 }; 

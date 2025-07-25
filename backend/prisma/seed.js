@@ -29,10 +29,26 @@ async function main() {
     "mail": "alumni@gmail.com"
   },
   {
-    "name": "alumni",
+    "name": "alumni2",
     "reg_no": "2222",
     "dob": new Date("2000-01-01"),
     "mail": "alumni@gmail.com"
+  }
+  ]   
+  })
+
+  await prisma.existingTeacher.createMany({
+    "data": [{
+    "name": "teacher",
+    "reg_no": "1111",
+    "dob": new Date("2000-01-01"),
+    "mail": "teacher@gmail.com"
+  },
+  {
+    "name": "teacher2",
+    "reg_no": "2222",
+    "dob": new Date("2000-01-01"),
+    "mail": "teacher2@gmail.com"
   }
   ]   
   })

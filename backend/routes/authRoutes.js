@@ -6,8 +6,11 @@ const {
 
   registerStudent,
   loginStudent,
-  verifyStudent,
 
+  registerTeacher,
+  loginTeacher,
+  
+  verifyStudent,
   getProfile
 } = require('../controllers/authController');
 const { authenticateToken } = require('../middleware/auth');
@@ -44,6 +47,10 @@ router.post('/login/alumini', loginValidation, loginAlumini);
 //Student Routes
 router.post('/register/student', registerValidation, registerStudent);
 router.post('/login/student', loginValidation, loginStudent);
+
+//teacher Routes
+router.post('/register/teacher', registerValidation, registerTeacher);
+router.post('/login/teacher', loginValidation, loginTeacher);
 
 router.post('/verify', verificationValidation, verifyStudent);
 router.get('/profile', authenticateToken, getProfile);
