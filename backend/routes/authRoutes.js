@@ -37,12 +37,13 @@ const verificationValidation = [
   body('password').notEmpty().withMessage('Password is required')
 ];
 
-// Routes
+//Alumini Routes
 router.post('/register/alumini', registerValidation, registerAlumini);
 router.post('/login/alumini', loginValidation, loginAlumini);
 
-router.post('/register', registerValidation, registerStudent);
-router.post('/login', loginValidation, loginStudent);
+//Student Routes
+router.post('/register/student', registerValidation, registerStudent);
+router.post('/login/student', loginValidation, loginStudent);
 
 router.post('/verify', verificationValidation, verifyStudent);
 router.get('/profile', authenticateToken, getProfile);

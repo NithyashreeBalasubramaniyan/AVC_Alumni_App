@@ -4,14 +4,37 @@ const prisma = new PrismaClient();
 
 async function main() {
   
-  // Create a sample alumini
-  await prisma.ExistingAlumini.create({
-    data: {
-    name: "alumini1",
-    reg_no: "12345",
-    dob: new Date("2000-01-01"),
-    mail: "alumini1@gmail.com"
+  // Create a sample student
+  await prisma.existingStudent.createMany({
+    "data": [{
+    "name": "Student",
+    "reg_no": "1111",
+    "dob": new Date("2000-01-01"),
+    "mail": "Student@gmail.com"
+  },
+  {
+    "name": "Student2",
+    "reg_no": "2222",
+    "dob": new Date("2000-01-01"),
+    "mail": "Student2@gmail.com"
   }
+            ]   
+  })
+
+  await prisma.existingAlumini.createMany({
+    "data": [{
+    "name": "alumni",
+    "reg_no": "1111",
+    "dob": new Date("2000-01-01"),
+    "mail": "alumni@gmail.com"
+  },
+  {
+    "name": "alumni",
+    "reg_no": "2222",
+    "dob": new Date("2000-01-01"),
+    "mail": "alumni@gmail.com"
+  }
+  ]   
   })
 
   console.log('Sample student created!');

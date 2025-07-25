@@ -18,7 +18,6 @@ model ExistingAlumini {
   reg_no          String   @id 
   dob             DateTime
   mail            String
-  is_login        Boolean  @default(false)
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 }
@@ -36,7 +35,38 @@ model Alumini {
   updated_at      DateTime @updatedAt
 }
 
+model ExistingStudent {
+  name            String
+  reg_no          String   @id 
+  dob             DateTime
+  mail            String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+}
+
 model Student {
+  id              Int      @id @default(autoincrement())
+  name            String
+  reg_no          String   @unique
+  ph_no           String
+  dob             DateTime
+  mail            String
+  password        String
+  is_verified     Boolean  @default(false)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+}
+
+model ExistingTeacher {
+  name            String
+  reg_no          String   @id 
+  dob             DateTime
+  mail            String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+}
+
+model Teacher {
   id              Int      @id @default(autoincrement())
   name            String
   reg_no          String   @unique

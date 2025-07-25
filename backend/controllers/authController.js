@@ -56,6 +56,12 @@ const registerAlumini = async (req, res) => {
       }
     });
     
+    if(!existingAlumini){
+      return res.status(401).json({
+        success: false,
+        message: 'your data not in existing alumini table'
+      })
+    }
     console.log(`existing ${existingAlumini}`)
     
     // Hash password
@@ -171,6 +177,8 @@ const loginAlumini = async (req, res) => {
   }
 };
 
+//-------------------------------------------------------------------
+
 // Student Registration
 const registerStudent = async (req, res) => {
   try {
@@ -183,47 +191,66 @@ const registerStudent = async (req, res) => {
         errors: errors.array()
       });
     }
-
-    const { name, reg_no, ph_no, dob, password } = req.body;
-
-    // Check if student already exists
-    const existingStudent = await prisma.student.findFirst({
+    
+    const { name, reg_no, ph_no, dob, password, mail } = req.body;
+    
+    // Check if Student already exists
+    const duplicateStudent = await prisma.Student.findFirst({
       where: {
         OR: [
           { reg_no },
-          { ph_no }
+          { mail },
+        ]
+      }
+    })
+
+    if(duplicateStudent)
+    {
+      return res.status(401).json({
+        success: false,
+        message: 'already Registered, login your account'
+      })
+    }
+
+    //check if the student is in existing student table 
+    const existingStudent = await prisma.ExistingStudent.findFirst({
+      where: {
+        OR: [
+          { reg_no },
+          { mail },
         ]
       }
     });
-
-    if (existingStudent) {
-      return res.status(400).json({
+    
+    if(!existingStudent){
+      return res.status(401).json({
         success: false,
-        message: 'Student already exists with this register number or phone number'
-      });
+        message: 'your data not in existing student table'
+      })
     }
-
+    
     // Hash password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Insert new student
-    const student = await prisma.student.create({
+    
+    // Insert new Student
+    const student = await prisma.Student.create({
       data: {
         name,
         reg_no,
         ph_no,
+        mail,
         dob: new Date(dob),
         password: hashedPassword
       }
     });
-
+    
     // Generate JWT token
     const token = generateToken(student.id);
-
+    
     res.status(201).json({
       success: true,
-      message: 'Student registered successfully',
+      message: 'student registered successfully',
       data: {
         student: {
           id: student.id,
@@ -258,11 +285,11 @@ const loginStudent = async (req, res) => {
 
     const { reg_no, password } = req.body;
 
-    // Find student by register number
-    const student = await prisma.student.findUnique({
+    // Find Student by register number
+    const student = await prisma.Student.findUnique({
       where: { reg_no }
     });
-    console.log('Student found:', student);
+    console.log('student found:', student);
 
     if (!student) {
       return res.status(401).json({
@@ -314,6 +341,9 @@ const loginStudent = async (req, res) => {
     });
   }
 };
+
+
+// ---------------------------------------------------------------------
 
 // Student Verification (matches the form data)
 const verifyStudent = async (req, res) => {
