@@ -13,12 +13,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model ExistingAlumini {
+  name            String
+  reg_no          String   @id 
+  dob             DateTime
+  mail            String
+  is_login        Boolean  @default(false)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+}
+
+model Alumini {
+  id              Int      @id @default(autoincrement())
+  name            String
+  reg_no          String   @unique
+  ph_no           String
+  dob             DateTime
+  mail            String
+  password        String
+  is_verified     Boolean  @default(false)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+}
+
 model Student {
   id              Int      @id @default(autoincrement())
   name            String
-  register_number String   @unique
-  phone_number    String
-  date_of_birth   DateTime
+  reg_no          String   @unique
+  ph_no           String
+  dob             DateTime
+  mail            String
   password        String
   is_verified     Boolean  @default(false)
   created_at      DateTime @default(now())
