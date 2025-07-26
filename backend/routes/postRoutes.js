@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const { createPost, getPost } = require('../controllers/postController');
 
 // Custom storage with original extension
 const storage = multer.diskStorage({
@@ -17,8 +18,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-const { createPost } = require('../controllers/postController');
 
 router.post('/create', upload.single('image'), createPost);
+router.get('/getall',  getPost);
 
 module.exports = router;

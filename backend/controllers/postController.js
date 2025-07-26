@@ -50,5 +50,16 @@ const createPost = async (req, res) => {
   }
 };
 
+// get all post
+const getPost = async (req, res) =>{
+    try{
+        const allPost = await prisma.post.findMany()
+        res.status(200).json({success: true, message: "get all posts", data: allPost })
+    }
+    catch (err) {
+    res.status(500).json({ error: err.message });
+    }
+}
 
-module.exports = { createPost }
+
+module.exports = { createPost, getPost }
