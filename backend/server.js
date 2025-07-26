@@ -3,7 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
-// const pool = require('./config/database'); // REMOVE THIS LINE
+const postRoutes = require('./routes/postRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,9 +12,13 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static('uploads'));
 
 // Routes
 app.use('/api/auth', authRoutes);
+
+// Posts
+app.use('/api/post', postRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {

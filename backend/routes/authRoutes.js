@@ -1,8 +1,8 @@
 const express = require('express');
 const { body } = require('express-validator');
 const {
-  registerAlumini,
-  loginAlumini,
+  registeralumni,
+  loginalumni,
 
   registerStudent,
   loginStudent,
@@ -10,7 +10,7 @@ const {
   registerTeacher,
   loginTeacher,
   
-  verifyStudent,
+  createPost,
   getProfile
 } = require('../controllers/authController');
 const { authenticateToken } = require('../middleware/auth');
@@ -32,17 +32,17 @@ const loginValidation = [
   body('password').notEmpty().withMessage('Password is required')
 ];
 
-const verificationValidation = [
-  body('name').notEmpty().trim().withMessage('Name is required'),
-  body('reg_no').notEmpty().trim().withMessage('Register number is required'),
-  body('ph_no').notEmpty().trim().withMessage('Phone number is required'),
-  body('dob').isDate().withMessage('Valid date of birth is required'),
-  body('password').notEmpty().withMessage('Password is required')
-];
+// const verificationValidation = [
+//   body('name').notEmpty().trim().withMessage('Name is required'),
+//   body('reg_no').notEmpty().trim().withMessage('Register number is required'),
+//   body('ph_no').notEmpty().trim().withMessage('Phone number is required'),
+//   body('dob').isDate().withMessage('Valid date of birth is required'),
+//   body('password').notEmpty().withMessage('Password is required')
+// ];
 
-//Alumini Routes
-router.post('/register/alumini', registerValidation, registerAlumini);
-router.post('/login/alumini', loginValidation, loginAlumini);
+//alumni Routes
+router.post('/register/alumni', registerValidation, registeralumni);
+router.post('/login/alumni', loginValidation, loginalumni);
 
 //Student Routes
 router.post('/register/student', registerValidation, registerStudent);
@@ -52,7 +52,7 @@ router.post('/login/student', loginValidation, loginStudent);
 router.post('/register/teacher', registerValidation, registerTeacher);
 router.post('/login/teacher', loginValidation, loginTeacher);
 
-router.post('/verify', verificationValidation, verifyStudent);
+
 router.get('/profile', authenticateToken, getProfile);
 
 module.exports = router; 

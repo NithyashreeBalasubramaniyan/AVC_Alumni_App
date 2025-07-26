@@ -6,16 +6,16 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 // Generate JWT Token
-const generateToken = (userId) => {
+const generateToken = (userId, role) => {
   return jwt.sign(
-    { userId },
+    { userId, role },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE }
   );
 };
 
-// Alumini Registration
-const registerAlumini = async (req, res) => {
+// alumni Registration
+const registeralumni = async (req, res) => {
   try {
     // Check for validation errors
     const errors = validationResult(req);
@@ -29,17 +29,17 @@ const registerAlumini = async (req, res) => {
     
     const { name, reg_no, ph_no, dob, password, mail } = req.body;
     
-    // Check if Alumini already exists
-    const duplicateAlumini = await prisma.Alumini.findFirst({
+    // Check if alumni already exists
+    const duplicatealumni = await prisma.alumni.findFirst({
       where: {
-        OR: [
+        AND: [
           { reg_no },
           { dob: new Date(dob) },
         ]
       }
     })
 
-    if(duplicateAlumini)
+    if(duplicatealumni)
     {
       return res.status(401).json({
         success: false,
@@ -47,7 +47,7 @@ const registerAlumini = async (req, res) => {
       })
     }
 
-    const existingAlumini = await prisma.ExistingAlumini.findFirst({
+    const existingalumni = await prisma.existingalumni.findFirst({
       where: {
         AND: [
           { reg_no },
@@ -56,20 +56,20 @@ const registerAlumini = async (req, res) => {
       }
     });
     
-    if(!existingAlumini){
+    if(!existingalumni){
       return res.status(401).json({
         success: false,
-        message: 'your data not in existing alumini table'
+        message: 'your data not in existing alumni table'
       })
     }
-    console.log(`existing ${existingAlumini}`)
+
     
     // Hash password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     
-    // Insert new Alumini
-    const alumini = await prisma.Alumini.create({
+    // Insert new alumni
+    const alumni = await prisma.alumni.create({
       data: {
         name,
         reg_no,
@@ -81,17 +81,17 @@ const registerAlumini = async (req, res) => {
     });
     
     // Generate JWT token
-    const token = generateToken(alumini.id);
+    const token = generateToken(alumni.id, "alumni");
     
     res.status(201).json({
       success: true,
-      message: 'Alumini registered successfully',
+      message: 'alumni registered successfully',
       data: {
-        alumini: {
-          id: alumini.id,
-          name: alumini.name,
-          reg_no: alumini.reg_no,
-          is_verified: alumini.is_verified
+        alumni: {
+          id: alumni.id,
+          name: alumni.name,
+          reg_no: alumni.reg_no,
+          is_verified: alumni.is_verified
         },
         token
       }
@@ -106,8 +106,8 @@ const registerAlumini = async (req, res) => {
   }
 };
 
-// alumini login
-const loginAlumini = async (req, res) => {
+// alumni login
+const loginalumni = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -120,13 +120,13 @@ const loginAlumini = async (req, res) => {
 
     const { reg_no, password } = req.body;
 
-    // Find alumini by register number
-    const alumini = await prisma.Alumini.findUnique({
+    // Find alumni by register number
+    const alumni = await prisma.alumni.findUnique({
       where: { reg_no }
     });
-    console.log('alumini found:', alumini);
+    console.log('alumni found:', alumni);
 
-    if (!alumini) {
+    if (!alumni) {
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
@@ -134,7 +134,7 @@ const loginAlumini = async (req, res) => {
     }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, alumini.password);
+    const isPasswordValid = await bcrypt.compare(password, alumni.password);
     console.log('Password valid:', isPasswordValid);
 
     if (!isPasswordValid) {
@@ -148,20 +148,17 @@ const loginAlumini = async (req, res) => {
     console.log('JWT_SECRET:', process.env.JWT_SECRET);
     console.log('JWT_EXPIRE:', process.env.JWT_EXPIRE);
 
-    // Generate JWT token
-    const token = generateToken(alumini.id);
-
     res.json({
       success: true,
       message: 'Login successful',
       data: {
-        alumini: {
-          id: alumini.id,
-          name: alumini.name,
-          reg_no: alumini.reg_no,
-          ph_no: alumini.ph_no,
-          dob: alumini.dob,
-          is_verified: alumini.is_verified
+        alumni: {
+          id: alumni.id,
+          name: alumni.name,
+          reg_no: alumni.reg_no,
+          ph_no: alumni.ph_no,
+          dob: alumni.dob,
+          is_verified: alumni.is_verified
         },
         token
       }
@@ -246,7 +243,7 @@ const registerStudent = async (req, res) => {
     });
     
     // Generate JWT token
-    const token = generateToken(student.id);
+    const token = generateToken(student.id, "student");
     
     res.status(201).json({
       success: true,
@@ -312,9 +309,6 @@ const loginStudent = async (req, res) => {
     // Debug JWT secret
     console.log('JWT_SECRET:', process.env.JWT_SECRET);
     console.log('JWT_EXPIRE:', process.env.JWT_EXPIRE);
-
-    // Generate JWT token
-    const token = generateToken(student.id);
 
     res.json({
       success: true,
@@ -413,7 +407,7 @@ const registerTeacher = async (req, res) => {
     });
     
     // Generate JWT token
-    const token = generateToken(teacher.id);
+    const token = generateToken(teacher.id, "teacher");
     
     res.status(201).json({
       success: true,
@@ -480,8 +474,6 @@ const loginTeacher = async (req, res) => {
     console.log('JWT_SECRET:', process.env.JWT_SECRET);
     console.log('JWT_EXPIRE:', process.env.JWT_EXPIRE);
 
-    // Generate JWT token
-    const token = generateToken(teacher.id);
 
     res.json({
       success: true,
@@ -494,8 +486,7 @@ const loginTeacher = async (req, res) => {
           ph_no: teacher.ph_no,
           dob: teacher.dob,
           is_verified: teacher.is_verified
-        },
-        token
+        }
       }
     });
 
@@ -525,80 +516,8 @@ const loginTeacher = async (req, res) => {
 
 
 
-// Student Verification (matches the form data)
-const verifyStudent = async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
-    }
 
-    const { name, reg_no, ph_no, dob, password } = req.body;
 
-    // Find student with exact match
-    const student = await prisma.student.findFirst({
-      where: {
-        name,
-        reg_no,
-        ph_no,
-        dob: new Date(dob)
-      }
-    });
-
-    if (!student) {
-      return res.status(404).json({
-        success: false,
-        message: 'No student found with the provided details'
-      });
-    }
-
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, student.password);
-
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid password'
-      });
-    }
-
-    // Update verification status
-    await prisma.student.update({
-      where: { id: student.id },
-      data: { is_verified: true }
-    });
-
-    // Generate JWT token
-    const token = generateToken(student.id);
-
-    res.json({
-      success: true,
-      message: 'Verification successful!',
-      data: {
-        student: {
-          id: student.id,
-          name: student.name,
-          reg_no: student.reg_no,
-          ph_no: student.ph_no,
-          dob: student.dob,
-          is_verified: true
-        },
-        token
-      }
-    });
-
-  } catch (error) {
-    console.error('Verification error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error'
-    });
-  }
-};
 
 // Get Student Profile
 const getProfile = async (req, res) => {
@@ -623,8 +542,8 @@ const getProfile = async (req, res) => {
 
 module.exports = {
   
-  registerAlumini,
-  loginAlumini,
+  registeralumni,
+  loginalumni,
   
   registerStudent,
   loginStudent,
@@ -634,5 +553,5 @@ module.exports = {
   
   
   getProfile,
-  verifyStudent
+
 }; 

@@ -18,10 +18,10 @@ async function main() {
     "dob": new Date("2000-01-01"),
     "mail": "Student2@gmail.com"
   }
-            ]   
+  ]   
   })
 
-  await prisma.existingAlumini.createMany({
+  await prisma.existingalumni.createMany({
     "data": [{
     "name": "alumni",
     "reg_no": "1111",
