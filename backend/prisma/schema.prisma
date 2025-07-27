@@ -31,6 +31,14 @@ model alumni {
   mail        String
   password    String
   job_role    String?
+<<<<<<< HEAD
+=======
+  Linkedin_id String?
+  profile_image String? 
+  Experience  String?
+  Gender      String?
+  Company     String?
+>>>>>>> master
   is_verified Boolean  @default(false)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
@@ -56,6 +64,14 @@ model Student {
   mail        String
   password    String
   job_role    String?
+<<<<<<< HEAD
+=======
+  Linkedin_id String?
+  Experience  String?
+  Gender      String?
+  Company     String?
+  profile_image String? 
+>>>>>>> master
   is_verified Boolean  @default(false)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
@@ -81,6 +97,14 @@ model Teacher {
   mail        String
   password    String
   job_role    String?
+<<<<<<< HEAD
+=======
+  Linkedin_id String?
+  Experience  String?
+  Gender      String?
+  Company     String?
+  profile_image String? 
+>>>>>>> master
   is_verified Boolean  @default(false)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt

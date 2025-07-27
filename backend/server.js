@@ -4,6 +4,8 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
+const userRoutes = require('./routes/userRoutes');
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +21,11 @@ app.use('/api/auth', authRoutes);
 
 // Posts
 app.use('/api/post', postRoutes);
+
+
+// User profile updates
+app.use('/api/user', userRoutes);
+
 
 // Health check route
 app.get('/health', (req, res) => {
