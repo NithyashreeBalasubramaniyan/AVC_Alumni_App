@@ -159,8 +159,7 @@ const loginalumni = async (req, res) => {
           ph_no: alumni.ph_no,
           dob: alumni.dob,
           is_verified: alumni.is_verified
-        },
-        token
+        }
       }
     });
 
@@ -321,8 +320,7 @@ const loginStudent = async (req, res) => {
           ph_no: student.ph_no,
           dob: student.dob,
           is_verified: student.is_verified
-        },
-        token
+        }
       }
     });
 
