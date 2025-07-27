@@ -1,0 +1,142 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Existingalumni {
+  name       String
+  reg_no     String   @id
+  dob        DateTime
+  mail       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model alumni {
+  id          Int      @id @default(autoincrement())
+  name        String
+  reg_no      String   @unique
+  ph_no       String
+  dob         DateTime
+  mail        String
+  password    String
+  job_role    String?
+  Linkedin_id String?
+  profile_image String? 
+  Experience  String?
+  Gender      String?
+  Company     String?
+  is_verified Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  Post Post[]
+}
+
+model ExistingStudent {
+  name       String
+  reg_no     String   @id
+  dob        DateTime
+  mail       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Student {
+  id          Int      @id @default(autoincrement())
+  name        String
+  reg_no      String   @unique
+  ph_no       String
+  dob         DateTime
+  mail        String
+  password    String
+  job_role    String?
+  Linkedin_id String?
+  Experience  String?
+  Gender      String?
+  Company     String?
+  profile_image String? 
+  is_verified Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  Post Post[]
+}
+
+model ExistingTeacher {
+  name       String
+  reg_no     String   @id
+  dob        DateTime
+  mail       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Teacher {
+  id          Int      @id @default(autoincrement())
+  name        String
+  reg_no      String   @unique
+  ph_no       String
+  dob         DateTime
+  mail        String
+  password    String
+  job_role    String?
+  Linkedin_id String?
+  Experience  String?
+  Gender      String?
+  Company     String?
+  profile_image String? 
+  is_verified Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  Post        Post[]
+}
+
+// model Profile {
+//   id     Int     @id @default(autoincrement())
+//   bio    String?
+//   avatar String?
+//   role   Role
+
+//   student   Student? @relation(fields: [studentId], references: [id])
+//   studentId Int?
+
+//   alumni   alumni? @relation(fields: [alumniId], references: [id])
+//   alumniId Int?
+
+//   teacher   Teacher? @relation(fields: [teacherId], references: [id])
+//   teacherId Int?
+// }
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  caption   String
+  image     String?
+  createdAt DateTime @default(now())
+  role      Role
+
+  student   Student? @relation(fields: [studentId], references: [id])
+  studentId Int?
+
+  alumni   alumni? @relation(fields: [alumniId], references: [id])
+  alumniId Int?
+
+  teacher   Teacher? @relation(fields: [teacherId], references: [id])
+  teacherId Int?
+}
+
+enum Role {
+  STUDENT
+  ALUMNI
+  TEACHER
+}
