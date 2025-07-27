@@ -23,25 +23,22 @@ model Existingalumni {
 }
 
 model alumni {
-  id          Int      @id @default(autoincrement())
-  name        String
-  reg_no      String   @unique
-  ph_no       String
-  dob         DateTime
-  mail        String
-  password    String
-  job_role    String?
-<<<<<<< HEAD
-=======
-  Linkedin_id String?
-  profile_image String? 
-  Experience  String?
-  Gender      String?
-  Company     String?
->>>>>>> master
-  is_verified Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  name          String
+  reg_no        String   @unique
+  ph_no         String
+  dob           DateTime
+  mail          String
+  password      String
+  job_role      String?
+  Linkedin_id   String?
+  profile_image String?
+  Experience    String?
+  Gender        String?
+  Company       String?
+  is_verified   Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
   Post Post[]
 }
@@ -56,25 +53,22 @@ model ExistingStudent {
 }
 
 model Student {
-  id          Int      @id @default(autoincrement())
-  name        String
-  reg_no      String   @unique
-  ph_no       String
-  dob         DateTime
-  mail        String
-  password    String
-  job_role    String?
-<<<<<<< HEAD
-=======
-  Linkedin_id String?
-  Experience  String?
-  Gender      String?
-  Company     String?
-  profile_image String? 
->>>>>>> master
-  is_verified Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  name          String
+  reg_no        String   @unique
+  ph_no         String
+  dob           DateTime
+  mail          String
+  password      String
+  job_role      String?
+  Linkedin_id   String?
+  Experience    String?
+  Gender        String?
+  Company       String?
+  profile_image String?
+  is_verified   Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
   Post Post[]
 }
@@ -89,26 +83,23 @@ model ExistingTeacher {
 }
 
 model Teacher {
-  id          Int      @id @default(autoincrement())
-  name        String
-  reg_no      String   @unique
-  ph_no       String
-  dob         DateTime
-  mail        String
-  password    String
-  job_role    String?
-<<<<<<< HEAD
-=======
-  Linkedin_id String?
-  Experience  String?
-  Gender      String?
-  Company     String?
-  profile_image String? 
->>>>>>> master
-  is_verified Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  Post        Post[]
+  id            Int      @id @default(autoincrement())
+  name          String
+  reg_no        String   @unique
+  ph_no         String
+  dob           DateTime
+  mail          String
+  password      String
+  job_role      String?
+  Linkedin_id   String?
+  Experience    String?
+  Gender        String?
+  Company       String?
+  profile_image String?
+  is_verified   Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  Post          Post[]
 }
 
 // model Profile {
