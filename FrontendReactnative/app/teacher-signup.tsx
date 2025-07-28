@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { BASE_URL } from "@/constant";
 import {
   View,
   Text,
@@ -8,34 +9,74 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
+  Alert,
 } from "react-native";
-import { Link } from "expo-router";
 
-type FormField = 'fullName' | 'registerNumber' | 'dob' | 'email' | 'password';
+
+import { Link, useRouter } from "expo-router";
+
+type FormField = 'fullName' | 'registerNumber' | 'dob' | 'phonenumber' | 'email' | 'password';
+
 
 export default function SignupScreen() {
-  const fields: FormField[] = ['fullName', 'registerNumber', 'dob', 'email', 'password'];
+  const router = useRouter();
+  const fields: FormField[] = ['fullName', 'registerNumber','phonenumber' ,'dob', 'email', 'password'];
+  
+
   const [form, setForm] = useState<Record<FormField, string>>({
     fullName: "",
     registerNumber: "",
     dob: "",
     email: "",
+    phonenumber:"",
     password: "",
   });
+  
 
   const handleChange = (field: FormField, value: string) => {
     setForm({ ...form, [field]: value });
   };
+const handleSignup = async () => {
+  try {
+    const payload = {
+      name: form.fullName,
+      reg_no: form.registerNumber,
+      ph_no: form.phonenumber,
+      dob: form.dob,
+      mail: form.email,
+      password: form.password,
+    };
+
+    const response = await fetch(`${BASE_URL}/api/auth/register/teacher`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      Alert.alert("Success", "Account created successfully!", [
+        { text: "OK", onPress: () => router.push("/teacher-login") },
+      ]);
+    } else {
+      Alert.alert("Error", data.message || "Something went wrong.");
+    }
+  } catch (error) {
+    Alert.alert("Network Error", "Failed to connect to server.");
+    console.error("Signup error:", error);
+  }
+};
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         {/* Top Logo */}
         <View style={styles.logoContainer}>
-          <Image
-            source={require("../assets/avc app logo.png")}
-            style={styles.logo}
-          />
+          <Image source={require("../assets/avc app logo.png")} style={styles.logo} />
           <Text style={styles.logoText}>
             Alumni{"\n"}
             <Text style={styles.connectText}>Connect</Text>
@@ -44,10 +85,7 @@ export default function SignupScreen() {
 
         {/* Form Card */}
         <View style={styles.card}>
-          <Image
-            source={require("../assets/alumni.png")}
-            style={styles.avatar}
-          />
+          <Image source={require("../assets/Teacher.png")} style={styles.avatar} />
           <Text style={styles.heading}>Signup</Text>
 
           {fields.map((field) => (
@@ -58,7 +96,9 @@ export default function SignupScreen() {
                 field === "registerNumber"
                   ? "Enter teacher uid"
                   : field === "dob"
-                  ? "Date of Birth(date/month/year)"
+                  ? "Date of Birth (DD/MM/YYYY)"
+                  : field === "phonenumber"
+                  ? "phonenumber"
                   : field.charAt(0).toUpperCase() + field.slice(1)
               }
               placeholderTextColor="#999"
@@ -68,8 +108,8 @@ export default function SignupScreen() {
             />
           ))}
 
-          <TouchableOpacity style={styles.signupButton}>
-            <Text style={styles.signupButtonText}>Sign up</Text>
+          <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
+            <Text style={styles.signupButtonText}>Signup</Text>
           </TouchableOpacity>
 
           <Text style={styles.footerText}>
