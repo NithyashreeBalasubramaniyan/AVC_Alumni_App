@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 
-const ProfileUpdate = () => {
+const profile = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [gender, setGender] = useState('');
@@ -20,16 +20,16 @@ const ProfileUpdate = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image
-          source={require('./home')}
+        {/* <Image
+          source={require('../../assets/images/alumni.png')}
           style={styles.logo}
-        />
+        /> */}
         <Text style={styles.headerText}>Alumni Connect</Text>
       </View>
       <Text style={styles.welcomeText}>Welcome Tharik !</Text>
       <View style={styles.profilePic}>
         <Image
-          source={require('')}
+          source={require('./alumni.png')}
           style={styles.profileImage}
         />
       </View>
@@ -93,7 +93,10 @@ const ProfileUpdate = () => {
       </TouchableOpacity>
     </View>
   );
-};
+
+}
+
+export default profile;
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
@@ -107,5 +110,3 @@ const styles = StyleSheet.create({
   button: { backgroundColor: '#007AFF', padding: 10, borderRadius: 5, alignItems: 'center' },
   buttonText: { color: 'white', fontWeight: 'bold' },
 });
-
-export default ProfileUpdate;
