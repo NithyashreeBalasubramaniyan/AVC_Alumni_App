@@ -16,18 +16,19 @@ import { useRouter } from "expo-router";
 
 
 
+
 export default function SignInScreen() {
   const [registerNumber, setRegisterNumber] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter(); 
 
-  const handleLogin = async () => {
-    console.log("hello", BASE_URL)
-    try {
-      const response = await axios.post(`${BASE_URL}/api/auth/login/student`, {
-        reg_no:registerNumber,
-        password:password,
-      });
+const handleLogin = async () => {
+  console.log("hello", BASE_URL)
+  try {
+    const response = await axios.post(`${BASE_URL}/api/auth/login/student`, {
+      reg_no: registerNumber,
+      password: password,
+    });
 
       if (response.data.success) {
         Alert.alert("Login Successful", "Welcome!");
@@ -38,7 +39,7 @@ export default function SignInScreen() {
       console.error(error);
       Alert.alert("Error", error?.response?.data?.message || "Server error");
     }
-  };
+  } 
 
   return (
     <SafeAreaView style={styles.container}>
@@ -89,7 +90,7 @@ export default function SignInScreen() {
       </View>
     </SafeAreaView>
   );
-}``
+}
 
 const styles = StyleSheet.create({
   container: {

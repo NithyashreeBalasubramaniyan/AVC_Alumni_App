@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { BASE_URL } from "@/constant";
 import {
   View,
   Text,
@@ -11,39 +12,50 @@ import {
   Alert,
 } from "react-native";
 
-import { BASE_URL } from "@/constant";
 
 import { Link, useRouter } from "expo-router";
 
-type FormField = 'fullName' | 'registerNumber' | 'dob' | 'email' | 'password';
+type FormField = 'fullName' | 'registerNumber' | 'dob' | 'phonenumber' | 'email' | 'password';
+
 
 export default function SignupScreen() {
   const router = useRouter();
-  const fields: FormField[] = ['fullName', 'registerNumber', 'dob', 'email', 'password'];
+  const fields: FormField[] = ['fullName', 'registerNumber','phonenumber' ,'dob', 'email', 'password'];
+  
 
   const [form, setForm] = useState<Record<FormField, string>>({
     fullName: "",
     registerNumber: "",
     dob: "",
     email: "",
+    phonenumber:"",
     password: "",
   });
+  
 
   const handleChange = (field: FormField, value: string) => {
     setForm({ ...form, [field]: value });
   };
+const handleSignup = async () => {
+  try {
+    const payload = {
+      name: form.fullName,
+      reg_no: form.registerNumber,
+      ph_no: form.phonenumber,
+      dob: form.dob,
+      mail: form.email,
+      password: form.password,
+    };
 
-  const handleSignup = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/api/auth/register/alumni`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
+    const response = await fetch(`${BASE_URL}/api/auth/register/alumni`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
       if (response.ok) {
         Alert.alert("Success", "Account created successfully!", [
@@ -84,6 +96,8 @@ export default function SignupScreen() {
                   ? "Enter register number"
                   : field === "dob"
                   ? "Date of Birth (DD/MM/YYYY)"
+                  : field === "phonenumber"
+                  ? "phonenumber"
                   : field.charAt(0).toUpperCase() + field.slice(1)
               }
               placeholderTextColor="#999"
@@ -94,7 +108,7 @@ export default function SignupScreen() {
           ))}
 
           <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
-            <Text style={styles.signupButtonText}>Sign up</Text>
+            <Text style={styles.signupButtonText}>Signup</Text>
           </TouchableOpacity>
 
           <Text style={styles.footerText}>
