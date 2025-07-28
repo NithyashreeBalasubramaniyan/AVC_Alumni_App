@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { BASE_URL } from "@/constant";
+
 import {
   View,
   Text,
@@ -12,7 +14,7 @@ import {
 import axios from "axios";
 import { useRouter } from "expo-router";
 
-const BASE_URL = "http://192.168.171.47:3000"; 
+
 
 export default function SignInScreen() {
   const [registerNumber, setRegisterNumber] = useState("");
@@ -20,6 +22,7 @@ export default function SignInScreen() {
   const router = useRouter(); 
 
   const handleLogin = async () => {
+    console.log("hello", BASE_URL)
     try {
       const response = await axios.post(`${BASE_URL}/api/auth/login/student`, {
         reg_no:registerNumber,
@@ -28,7 +31,7 @@ export default function SignInScreen() {
 
       if (response.data.success) {
         Alert.alert("Login Successful", "Welcome!");
-        router.push("/Homepage"); 
+        router.push('/(tabs)/home');
         Alert.alert("Happy login", response.data.message || "Invalid credentials");
       }
     } catch (error: any) {

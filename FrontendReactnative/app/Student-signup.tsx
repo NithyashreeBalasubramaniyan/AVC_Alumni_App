@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { BASE_URL } from "@/constant";
 import {
   View,
   Text,
@@ -11,7 +12,6 @@ import {
   Alert,
 } from "react-native";
 
-const BASE_URL = "http://192.168.171.47:3000"; 
 
 import { Link, useRouter } from "expo-router";
 

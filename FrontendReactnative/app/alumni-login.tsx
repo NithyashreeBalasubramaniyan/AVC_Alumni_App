@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import axios from "axios";
+
+import { BASE_URL } from "@/constant";
 import {
   View,
   Text,
@@ -9,10 +12,8 @@ import {
   SafeAreaView,
   Alert,
 } from "react-native";
-import axios from "axios";
 import { useRouter } from "expo-router";
 
-const BASE_URL = "http://192.168.171.47:3000"; 
 
 export default function SignInScreen() {
   const [registerNumber, setRegisterNumber] = useState("");

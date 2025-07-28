@@ -11,7 +11,7 @@ import {
   Alert,
 } from "react-native";
 
-const BASE_URL = "http://192.168.171.47:3000"; 
+import { BASE_URL } from "@/constant";
 
 import { Link, useRouter } from "expo-router";
 

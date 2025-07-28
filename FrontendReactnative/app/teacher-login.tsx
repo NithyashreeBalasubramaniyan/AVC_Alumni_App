@@ -12,7 +12,7 @@ import {
 import axios from "axios";
 import { useRouter } from "expo-router";
 
-const BASE_URL = "http://192.168.171.47:3000"; 
+import { BASE_URL } from "@/constant";
 
 export default function SignInScreen() {
   const [registerNumber, setRegisterNumber] = useState("");

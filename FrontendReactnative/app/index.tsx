@@ -1,5 +1,7 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { BASE_URL } from "@/constant";
+import axios from "axios";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,7 +17,14 @@ type Role = "Student" | "Alumni" | "Teacher";
 
 export default function Index() {
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [dummy, setDummy] = useState()
   const router = useRouter();
+
+  useEffect(()=>{
+
+    axios.get(`${BASE_URL}/health`).then(res => console.log(res.data)).catch(err => console.error(err.message));
+    
+  },[])
 
   const roles = [
     {
@@ -83,6 +92,7 @@ export default function Index() {
     {/* Choose Role Button */}
     <TouchableOpacity style={styles.chooseButton} onPress={handleChooseRole}>
       <Text style={styles.chooseButtonText}>ChooseRole</Text>
+      {/* <Text>{}</Text> */}
     </TouchableOpacity>
   </View>
 </SafeAreaView>
