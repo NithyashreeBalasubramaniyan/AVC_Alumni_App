@@ -49,13 +49,13 @@ export default function Index() {
 
   switch (selectedRole) {
     case "Student":
-      router.replace("/Student-login");
+      router.push("/Student-login");
       break;
     case "Alumni":
-      router.replace("/alumni-login");
+      router.push("/alumni-login");
       break;
     case "Teacher":
-      router.replace("/teacher-login");
+      router.push("/teacher-login");
       break;
   }
 };
