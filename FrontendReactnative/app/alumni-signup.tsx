@@ -47,7 +47,7 @@ export default function SignupScreen() {
 
       if (response.ok) {
         Alert.alert("Success", "Account created successfully!", [
-          { text: "OK", onPress: () => router.push("/alumni-login") },
+          { text: "OK", onPress: () => router.replace("/alumni-login") },
         ]);
       } else {
         Alert.alert("Error", data.message || "Something went wrong.");

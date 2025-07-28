@@ -59,7 +59,7 @@ const handleSignup = async () => {
 
     if (response.ok) {
       Alert.alert("Success", "Account created successfully!", [
-        { text: "OK", onPress: () => router.push("/Student-login") },
+        { text: "OK", onPress: () => router.replace("/Student-login") },
       ]);
     } else {
       Alert.alert("Error", data.message || "Something went wrong.");

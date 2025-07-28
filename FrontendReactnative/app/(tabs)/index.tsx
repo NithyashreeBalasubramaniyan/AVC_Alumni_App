@@ -1,7 +1,8 @@
 import { Link } from 'expo-router';
 import { Text, View } from 'react-native';
+import { StatusBar } from 'react-native';
 
-export default function Home() {
+export default function index() {
 
 
   return (
@@ -12,9 +13,9 @@ export default function Home() {
         alignItems: "center",
       }}
       >
-      <Text>Home page.</Text>
+      <Text>Home page...</Text>
       <Link href='./profile'>go to profile</Link>
-
+      <StatusBar barStyle={'dark-content'}></StatusBar>
     </View>
   );
 }

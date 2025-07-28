@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   ScrollView,
   Dimensions,
+  StatusBar,
 } from "react-native";
 
 type Role = "Student" | "Alumni" | "Teacher";
@@ -48,13 +49,13 @@ export default function Index() {
 
   switch (selectedRole) {
     case "Student":
-      router.push("/Student-login");
+      router.replace("/Student-login");
       break;
     case "Alumni":
-      router.push("/alumni-login");
+      router.replace("/alumni-login");
       break;
     case "Teacher":
-      router.push("/teacher-login");
+      router.replace("/teacher-login");
       break;
   }
 };
@@ -92,9 +93,9 @@ export default function Index() {
     {/* Choose Role Button */}
     <TouchableOpacity style={styles.chooseButton} onPress={handleChooseRole}>
       <Text style={styles.chooseButtonText}>ChooseRole</Text>
-      {/* <Text>{}</Text> */}
     </TouchableOpacity>
   </View>
+  <StatusBar barStyle={'dark-content'}></StatusBar>
 </SafeAreaView>
 
 

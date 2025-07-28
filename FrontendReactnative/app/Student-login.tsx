@@ -31,7 +31,7 @@ export default function SignInScreen() {
 
       if (response.data.success) {
         Alert.alert("Login Successful", "Welcome!");
-        router.push('/(tabs)/home');
+        router.replace('/');
         Alert.alert("Happy login", response.data.message || "Invalid credentials");
       }
     } catch (error: any) {
@@ -64,6 +64,7 @@ export default function SignInScreen() {
           placeholder="Enter register number"
           placeholderTextColor="#999"
           value={registerNumber}
+          keyboardType="numeric"
           onChangeText={setRegisterNumber}
         />
         <TextInput
@@ -81,7 +82,7 @@ export default function SignInScreen() {
 
         <Text style={styles.signupText}>
           Don’t have an account?{" "}
-          <Text onPress={() => router.push("/Student-signup")} style={styles.signupLink}>
+          <Text onPress={() => router.replace("/Student-signup")} style={styles.signupLink}>
             Signup
           </Text>
         </Text>

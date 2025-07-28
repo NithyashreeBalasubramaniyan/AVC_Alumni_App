@@ -28,7 +28,7 @@ export default function SignInScreen() {
 
       if (response.data.success) {
         Alert.alert("Login Successful", "Welcome!");
-        router.push("/Homepage"); 
+        router.replace("/Homepage"); 
         Alert.alert("Happy Login", response.data.message || "Invalid credentials");
       }
     } catch (error: any) {
@@ -78,7 +78,7 @@ export default function SignInScreen() {
 
         <Text style={styles.signupText}>
           Don’t have an account?{" "}
-          <Text onPress={() => router.push("/teacher-signup")} style={styles.signupLink}>
+          <Text onPress={() => router.replace("/teacher-signup")} style={styles.signupLink}>
             Signup
           </Text>
         </Text>
