@@ -1,6 +1,10 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View, Button } from 'react-native'
+import { useRouter } from 'expo-router'
 
 const upload = () => {
+
+  const route = useRouter()
+
   return (
     <View style={{
         flex: 1,
@@ -8,6 +12,7 @@ const upload = () => {
         alignItems: "center",
       }}>
       <Text>upload</Text>
+      <Button onPress={()=>route.replace('/main')} title='log out'></Button>
     </View>
   )
 }
