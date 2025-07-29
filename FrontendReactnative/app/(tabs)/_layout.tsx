@@ -1,8 +1,34 @@
 import { Tabs } from "expo-router";
 import { Entypo, FontAwesome } from '@expo/vector-icons';
-import { View } from 'react-native';
+import { View, BackHandler, ToastAndroid } from 'react-native';
+import { useEffect, useRef } from 'react';
 
 export default function TabsLayout() {
+  const backPressedOnce = useRef(false);
+
+  useEffect(() => {
+    const backAction = () => {
+      if (backPressedOnce.current) {
+        BackHandler.exitApp(); // Exit app
+        return true;
+      }
+
+      backPressedOnce.current = true;
+      ToastAndroid.show('Press back again to exit', ToastAndroid.SHORT);
+
+      // Reset after 2 seconds
+      setTimeout(() => {
+        backPressedOnce.current = false;
+      }, 2000);
+
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+
+    return () => backHandler.remove(); // Cleanup
+  }, []);
+
   return (
     <Tabs
       screenOptions={{
@@ -39,7 +65,7 @@ export default function TabsLayout() {
         options={{
           title: "Upload",
           tabBarIcon: ({ color }) => (
-             <FontAwesome name="plus" size={28} color={color} />
+            <FontAwesome name="plus" size={24} color={color} />
           ),
         }}
       />

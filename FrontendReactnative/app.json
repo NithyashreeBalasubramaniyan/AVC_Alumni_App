@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "FrontendReactnative",
-    "slug": "FrontendReactnative",
+    "name": "Alumini Connect",
+    "slug": "AVC College Connects Us",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/applogo.png",
     "scheme": "frontendreactnative",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,24 +13,30 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/applogo.png",
+        "resizeMode": "cover",  
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
     },
+    "splash": {
+      "image": "./assets/applogo.png",          
+      "resizeMode": "cover",                 
+      "backgroundColor": "#377AFF"             
+    },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/applogo.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/applogo.png",
           "imageWidth": 200,
-          "resizeMode": "contain",
+          "resizeMode": "cover",
           "backgroundColor": "#ffffff"
         }
       ]
