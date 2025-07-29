@@ -1,131 +1,283 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image,Keyboard, ScrollView, KeyboardAvoidingView } from 'react-native';
+import React, { useRef } from "react";
+import {
+  View,
+  Text, // Ensure Text is imported
+  TextInput,
+  Image,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+  StyleSheet,
+  Dimensions,
+  StatusBar
+} from "react-native";
+import RNPickerSelect from "react-native-picker-select";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const profile = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [gender, setGender] = useState('');
-  const [linkedinId, setLinkedinId] = useState('');
-  const [company, setCompany] = useState('');
-  const [jobRole, setJobRole] = useState('');
-  const [experience, setExperience] = useState('');
-  const [technologies, setTechnologies] = useState('');
-  const [batch, setBatch] = useState('');
-  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+const { height: screenHeight } = Dimensions.get("window");
 
-  useEffect(() => {
-    const showListener = Keyboard.addListener("keyboardDidShow", () =>
-      setKeyboardVisible(true)
-    );
-    const hideListener = Keyboard.addListener("keyboardDidHide", () =>
-      setKeyboardVisible(false)
-    );
+export default function UpdateProfile() {
+  const nameRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const linkedinRef = useRef<TextInput>(null);
+  const companyRef = useRef<TextInput>(null);
+  const roleRef = useRef<TextInput>(null);
+  const techRef = useRef<TextInput>(null);
 
-    return () => {
-      showListener.remove();
-      hideListener.remove();
-    };
-  }, []);
+  const [formData, setFormData] = React.useState({
+    name: "",
+    email: "",
+    linkedin: "",
+    company: "",
+    jobRole: "",
+    experience: "",
+    technologies: "",
+    batch: "",
+    gender: "",
+  });
 
-  const handleUpdate = () => {
-    // Handle profile update logic here
-    console.log({ name, email, gender, linkedinId, company, jobRole, experience, technologies, batch });
+  const handleChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = () => {
+    console.log(formData);
+    // Handle submit (e.g., send data to an API)
+    alert("Profile Updated!"); // Simple alert for demonstration
   };
 
   return (
-    <View style={styles.container}>
-        <View style={styles.header}>
-          {/* <Image
-            source={require('../../assets/images/alumni.png')}
-            style={styles.logo}
-            /> */}
-          <Text style={styles.headerText}>Alumni Connect</Text>
-        </View>
-        <Text style={styles.welcomeText}>Welcome {name}!</Text>
-        <View style={styles.profilePic}>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardAvoidingContainer}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 20}
+      >
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <Image
-            source={require('./alumni.png')}
-            style={styles.profileImage}
-            />
-        </View>
-        <KeyboardAvoidingView>
-        <ScrollView style={[ { height: isKeyboardVisible ? 280 : 500 }]}>
-        <TextInput
-          style={styles.input}
-          placeholder="Name"
-          value={name}
-          onChangeText={setName}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Email id"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Gender"
-          value={gender}
-          onChangeText={setGender}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Linked in id"
-          value={linkedinId}
-          onChangeText={setLinkedinId}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="working company"
-          value={company}
-          onChangeText={setCompany}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Job Role"
-          value={jobRole}
-          onChangeText={setJobRole}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Experience"
-          value={experience}
-          onChangeText={setExperience}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Technologies used"
-          value={technologies}
-          onChangeText={setTechnologies}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Batch"
-          value={batch}
-          onChangeText={setBatch}
-        />
-        </ScrollView>
-        <TouchableOpacity style={styles.button} onPress={handleUpdate}>
-          <Text style={styles.buttonText}>Update profile</Text>
-        </TouchableOpacity>
-        </KeyboardAvoidingView>
-      </View>
-  );
+            source={require("./alumni.png")}
+            style={styles.avatar}
+          />
 
+          <TextInput
+            ref={nameRef}
+            placeholder="Name"
+            value={formData.name}
+            onChangeText={(text) => handleChange("name", text)}
+            style={styles.input}
+            returnKeyType="next"
+            onSubmitEditing={() => emailRef.current?.focus()}
+          />
+          <TextInput
+            ref={emailRef}
+            placeholder="Email ID"
+            value={formData.email}
+            onChangeText={(text) => handleChange("email", text)}
+            style={styles.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            returnKeyType="next"
+            onSubmitEditing={() => linkedinRef.current?.focus()}
+          />
+          <TextInput
+            ref={linkedinRef}
+            placeholder="LinkedIn ID"
+            value={formData.linkedin}
+            onChangeText={(text) => handleChange("linkedin", text)}
+            style={styles.input}
+            autoCapitalize="none"
+            returnKeyType="next"
+            onSubmitEditing={() => companyRef.current?.focus()}
+          />
+          <TextInput
+            ref={companyRef}
+            placeholder="Company"
+            value={formData.company}
+            onChangeText={(text) => handleChange("company", text)}
+            style={styles.input}
+            returnKeyType="next"
+            onSubmitEditing={() => roleRef.current?.focus()}
+          />
+          <TextInput
+            ref={roleRef}
+            placeholder="Job Role"
+            value={formData.jobRole}
+            onChangeText={(text) => handleChange("jobRole", text)}
+            style={styles.input}
+            returnKeyType="next"
+            onSubmitEditing={() => techRef.current?.focus()}
+          />
+
+          {/* Experience Dropdown */}
+          <Text style={styles.label}>Experience</Text>
+          <View style={styles.pickerWrapper}>
+            <RNPickerSelect
+              onValueChange={(v) => handleChange("experience", v)}
+              placeholder={{ label: "Select Experience", value: null, color: '#9EA0A4' }}
+              items={[
+                { label: "Fresher", value: "Fresher" },
+                { label: "1 year", value: "1 year" },
+                { label: "2 years", value: "2 years" },
+                { label: "3+ years", value: "3+ years" },
+              ]}
+              style={pickerStyles}
+              useNativeAndroidPickerStyle={false}
+              Icon={() => <Text style={styles.icon}>▼</Text>}
+            />
+          </View>
+
+          <TextInput
+            ref={techRef}
+            placeholder="Technologies Used"
+            value={formData.technologies}
+            onChangeText={(text) => handleChange("technologies", text)}
+            style={styles.input}
+            returnKeyType="done"
+          />
+
+          {/* Batch Dropdown */}
+          <Text style={styles.label}>Batch</Text>
+          <View style={styles.pickerWrapper}>
+            <RNPickerSelect
+              onValueChange={(v) => handleChange("batch", v)}
+              placeholder={{ label: "Select Batch", value: null, color: '#9EA0A4' }}
+              items={[
+                { label: "2024", value: "2024" },
+                { label: "2025", value: "2025" },
+                { label: "2026", value: "2026" },
+                { label: "2027", value: "2027" },
+              ]}
+              style={pickerStyles}
+              useNativeAndroidPickerStyle={false}
+              Icon={() => <Text style={styles.icon}>▼</Text>}
+            />
+          </View>
+
+          {/* Gender Dropdown */}
+          <Text style={styles.label}>Gender</Text>
+          <View style={styles.pickerWrapper}>
+            <RNPickerSelect
+              onValueChange={(v) => handleChange("gender", v)}
+              placeholder={{ label: "Select Gender", value: null, color: '#9EA0A4' }}
+              items={[
+                { label: "Male", value: "Male" },
+                { label: "Female", value: "Female" },
+                { label: "Other", value: "Other" },
+              ]}
+              style={pickerStyles}
+              useNativeAndroidPickerStyle={false}
+              Icon={() => <Text style={styles.icon}>▼</Text>}
+            />
+          </View>
+
+          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>Update Profile</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
 }
 
-export default profile;
-
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  logo: { width: 40, height: 40, marginRight: 10 },
-  headerText: { fontSize: 20, fontWeight: 'bold', color: '#007AFF' },
-  welcomeText: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  profilePic: { alignItems: 'center', marginBottom: 20 },
-  profileImage: { width: 100, height: 100, borderRadius: 50 },
-  input: { height: 40, borderColor: 'gray', borderWidth: 1, borderRadius: 5, marginBottom: 20, paddingLeft: 10, marginHorizontal:10, backgroundColor: 'white' },
-  button: { backgroundColor: '#007AFF', padding: 10, borderRadius: 5, alignItems: 'center' },
-  buttonText: { color: 'white', fontWeight: 'bold' },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#F8F8F8",
+  },
+  keyboardAvoidingContainer: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    padding: 16,
+    paddingBottom: 80,
+    alignItems: "center",
+    flexGrow: 1,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
+    borderRadius: 50,
+  },
+  input: {
+    width: "100%",
+    height: 48,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    backgroundColor: "white",
+    fontSize: 16,
+    color: '#333',
+  },
+  label: {
+    alignSelf: "flex-start",
+    fontWeight: "bold",
+    marginBottom: 4,
+    marginTop: 8,
+    fontSize: 14,
+    color: '#555',
+  },
+  pickerWrapper: {
+    width: "100%",
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 6,
+    marginBottom: 12,
+    backgroundColor: "white",
+    paddingHorizontal: 8,
+    justifyContent: "center",
+    height: 48,
+  },
+  icon: {
+    fontSize: 16,
+    color: "#666",
+    position: "absolute",
+    right: 10,
+    top: 15,
+  },
+  button: {
+    backgroundColor: "#387bff",
+    paddingVertical: 14,
+    borderRadius: 6,
+    marginTop: 20,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: 18,
+  },
+});
+
+const pickerStyles = StyleSheet.create({
+  inputIOS: {
+    height: 48,
+    paddingHorizontal: 8,
+    color: "#333",
+    fontSize: 16,
+    paddingVertical: 10,
+  },
+  inputAndroid: {
+    height: 48,
+    paddingHorizontal: 8,
+    color: "#333",
+    fontSize: 16,
+    paddingVertical: 10,
+  },
+  placeholder: {
+    color: '#9EA0A4',
+    fontSize: 16,
+  },
 });
