@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { BASE_URL } from '@/constant';
 import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 // @ts-ignore
@@ -22,7 +23,7 @@ const App = () => {
 
   const fetchPosts = () => {
     setError('');
-    axios.get<{ data: Post[] }>('http://192.168.171.47:3000/api/post/getall')
+    axios.get<{ data: Post[] }>(`${BASE_URL}/api/post/getall`)
       .then(res => {
         const sortedPosts = (res.data.data || []).sort((a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -53,12 +54,12 @@ const App = () => {
         {posts.map(post => (
           <View key={post.id} style={styles.card}>
             <Text style={styles.caption}>{post.caption}</Text>
-            {post.image && (
+            {post.image!=null? (
               <Image
-                source={{ uri: post.image.replace('localhost', '192.168.171.47') }}
+                source={{ uri: post.image.replace('http://localhost:3000', BASE_URL) }}
                 style={styles.image}
               />
-            )}
+            ):""}
           </View>
         ))}
       </ScrollView>
