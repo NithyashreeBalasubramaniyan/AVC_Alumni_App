@@ -39,7 +39,7 @@ export default function TabsLayout() {
         options={{
           title: "Upload",
           tabBarIcon: ({ color }) => (
-            <FontAwesome name="upload" size={24} color={color} />
+             <FontAwesome name="plus" size={28} color={color} />
           ),
         }}
       />

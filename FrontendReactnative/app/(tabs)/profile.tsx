@@ -26,7 +26,7 @@ const profile = () => {
         /> */}
         <Text style={styles.headerText}>Alumni Connect</Text>
       </View>
-      <Text style={styles.welcomeText}>Welcome Tharik !</Text>
+      <Text style={styles.welcomeText}>Welcome {name}!</Text>
       <View style={styles.profilePic}>
         <Image
           source={require('./alumni.png')}

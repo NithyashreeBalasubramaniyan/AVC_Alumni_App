@@ -28,7 +28,7 @@ export default function SignInScreen() {
 
       if (response.data.success) {
         Alert.alert("Login Successful", "Welcome!");
-        router.replace("/Homepage"); 
+        router.replace("/"); 
         Alert.alert("Happy Login", response.data.message || "Invalid credentials");
       }
     } catch (error: any) {

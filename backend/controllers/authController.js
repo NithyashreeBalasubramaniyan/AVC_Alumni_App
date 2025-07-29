@@ -39,6 +39,13 @@ const registeralumni = async (req, res) => {
       }
     })
 
+      if (typeof reg_no !== 'string' || reg_no.length !== 12) {
+      return res.status(400).json({
+        success: false,
+        message: 'Registration number must be exactly 12 characters'
+      });
+    }
+
     if(duplicatealumni)
     {
       return res.status(401).json({
@@ -199,6 +206,13 @@ const registerStudent = async (req, res) => {
         ]
       }
     })
+      if (typeof reg_no !== 'string' || reg_no.length !== 12) {
+      return res.status(400).json({
+        success: false,
+        message: 'Registration number must be exactly 12 characters'
+      });
+    }
+
 
     if(duplicateStudent)
     {
@@ -362,6 +376,8 @@ const registerTeacher = async (req, res) => {
         ]
       }
     })
+
+    
 
     if(duplicateTeacher)
     {

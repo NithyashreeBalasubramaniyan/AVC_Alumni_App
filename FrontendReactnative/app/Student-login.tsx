@@ -23,7 +23,7 @@ export default function SignInScreen() {
   const router = useRouter(); 
 
 const handleLogin = async () => {
-  console.log("hello", BASE_URL)
+  
   try {
     const response = await axios.post(`${BASE_URL}/api/auth/login/student`, {
       reg_no: registerNumber,
