@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Platform,
+  SafeAreaView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
@@ -87,8 +89,8 @@ const PostScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Profile and Header */}
+    < >
+      <View style={styles.container}>
       <View style={styles.profileContainer}>
         <Image
           source={{ uri: 'https://i.pravatar.cc/100' }}
@@ -123,6 +125,7 @@ const PostScreen: React.FC = () => {
         />
       </TouchableOpacity>
     </View>
+    </>
   );
 };
 
@@ -132,7 +135,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 15,
-    backgroundColor: '#f8f8f8',
+    paddingVertical: 35,
+    backgroundColor: '#f4f4f4',
   },
   profileContainer: {
     flexDirection: 'row',
