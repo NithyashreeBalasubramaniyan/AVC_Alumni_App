@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity } from 'rea
 import axios from 'axios';
 // @ts-ignore
 import Icon from 'react-native-vector-icons/Ionicons';
-
+import { BASE_URL } from '@/constant';
 // Define the Post interface
 interface Post {
   id: number;
