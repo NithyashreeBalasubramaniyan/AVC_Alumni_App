@@ -71,6 +71,7 @@ const handleLogin = async () => {
         <TextInput
           style={styles.input}
           placeholder="Password"
+          autoCapitalize="none"
           placeholderTextColor="#999"
           secureTextEntry
           value={password}

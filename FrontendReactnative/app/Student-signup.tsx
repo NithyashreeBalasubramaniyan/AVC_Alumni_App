@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BASE_URL } from "@/constant";
 import {
   View,
@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  Keyboard
 } from "react-native";
 
 
@@ -20,8 +21,9 @@ type FormField = 'fullName' | 'registerNumber' | 'dob' | 'phonenumber' | 'email'
 
 export default function SignupScreen() {
   const router = useRouter();
+
   const fields: FormField[] = ['fullName', 'registerNumber','phonenumber' ,'dob', 'email', 'password'];
-  
+  const [ isKeyboardOpen, setIsKeyboardOpen ] = useState(false)
 
   const [form, setForm] = useState<Record<FormField, string>>({
     fullName: "",
@@ -31,6 +33,31 @@ export default function SignupScreen() {
     phonenumber:"",
     password: "",
   });
+
+    useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setIsKeyboardOpen(true); // Keyboard is open
+        console.log('Keyboard Did Show');
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setIsKeyboardOpen(false); // Keyboard is hidden
+        console.log('Keyboard Did Hide');
+      }
+    );
+
+    // Clean up listeners when the component unmounts
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
+
   
 
   const handleChange = (field: FormField, value: string) => {
@@ -73,7 +100,8 @@ const handleSignup = async () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={{padding: 20,
+        paddingBottom: (isKeyboardOpen?500:20),}}>
         {/* Top Logo */}
         <View style={styles.logoContainer}>
           <Image source={require("../assets/avc app logo.png")} style={styles.logo} />
@@ -89,24 +117,49 @@ const handleSignup = async () => {
           <Text style={styles.heading}>Signup</Text>
 
           {fields.map((field) => (
-            <TextInput
-              key={field}
-              style={styles.input}
-              placeholder={
-                field === "registerNumber"
-                  ? "Enter register number"
-                  : field === "dob"
-                  ? "Date of Birth (DD/MM/YYYY)"
-                  : field === "phonenumber"
-                  ? "phonenumber"
-                  : field.charAt(0).toUpperCase() + field.slice(1)
-              }
-              placeholderTextColor="#999"
-              secureTextEntry={field === "password"}
-              value={form[field]}
-              onChangeText={(text) => handleChange(field, text)}
-            />
-          ))}
+  <TextInput
+    key={field}
+    style={styles.input}
+    placeholder={
+      field === "registerNumber"
+        ? "Enter register number"
+        : field === "dob"
+        ? "Date of Birth (DD/MM/YYYY)"
+        : field === "phonenumber"
+        ? "Phone Number" // Changed to be more descriptive
+        : field === "email" // Added email placeholder
+        ? "Email ID"
+        : field.charAt(0).toUpperCase() + field.slice(1)
+    }
+    placeholderTextColor="#999"
+    secureTextEntry={field === "password"}
+    value={form[field]}
+    onChangeText={(text) => handleChange(field, text)}
+    // Dynamic Keyboard Types and other properties
+    keyboardType={
+      field === "email"
+        ? "email-address" // For email input
+        : field === "dob"
+        ? "numbers-and-punctuation" // For DOB (allows numbers and slashes/dashes)
+        : field === "registerNumber"
+        ? "numeric" // For register number (strictly numeric)
+        : field === "phonenumber"
+        ? "phone-pad" // For phone number (optimized for phone input)
+        : "default" // Default keyboard for other fields
+    }
+    // For numeric inputs, often want to disable auto-correct/auto-capitalize
+    autoCapitalize={
+      field === "email"
+        ? "none" // Prevents auto-capitalizing the first letter of email
+        : "sentences" // Default for most text fields
+    }
+    autoCorrect={
+      field === "email" || field === "password"
+        ? false // Disable for email and password
+        : true // Enable for other text fields
+    }
+  />
+))}
 
           <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
             <Text style={styles.signupButtonText}>Signup</Text>
@@ -123,7 +176,6 @@ const handleSignup = async () => {
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   safeArea: {
