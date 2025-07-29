@@ -4,8 +4,7 @@ import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity } from 'rea
 import axios from 'axios';
 // @ts-ignore
 import Icon from 'react-native-vector-icons/Ionicons';
-import { BASE_URL } from '@/constant';
-// Define the Post interface
+
 interface Post {
   id: number;
   caption: string;
@@ -15,6 +14,21 @@ interface Post {
   studentId: number | null;
   alumniId: number | null;
   teacherId: number | null;
+  student?: {
+    name: string;
+    job_role: string | null;
+    profile_image: string | null;
+  };
+  alumni?: {
+    name: string;
+    job_role: string | null;
+    profile_image: string | null;
+  };
+  teacher?: {
+    name: string;
+    job_role: string | null;
+    profile_image: string | null;
+  };
 }
 
 const App = () => {
@@ -23,14 +37,15 @@ const App = () => {
 
   const fetchPosts = () => {
     setError('');
-    axios.get<{ data: Post[] }>(`${BASE_URL}/api/post/getall`)
-      .then(res => {
-        const sortedPosts = (res.data.data || []).sort((a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    axios
+      .get<{ data: Post[] }>(`${BASE_URL}/api/post/getall`)
+      .then((res) => {
+        const sortedPosts = (res.data.data || []).sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         setPosts(sortedPosts);
       })
-      .catch(err => {
+      .catch((err) => {
         console.log('Fetch error:', err.message);
         setError('Failed to fetch posts');
       });
@@ -39,6 +54,10 @@ const App = () => {
   useEffect(() => {
     fetchPosts();
   }, []);
+
+  const getUserInfo = (post: Post) => {
+    return post.student || post.alumni || post.teacher || { name: 'Unknown', job_role: '', profile_image: null };
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -51,17 +70,37 @@ const App = () => {
 
       <ScrollView style={styles.container}>
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        {posts.map(post => (
-          <View key={post.id} style={styles.card}>
-            <Text style={styles.caption}>{post.caption}</Text>
-            {post.image!=null? (
-              <Image
-                source={{ uri: post.image.replace('http://localhost:3000', BASE_URL) }}
-                style={styles.image}
-              />
-            ):""}
-          </View>
-        ))}
+        {posts.map((post) => {
+          const user = getUserInfo(post);
+          return (
+            <View key={post.id} style={styles.card}>
+              <View style={styles.userRow}>
+                {user.profile_image ? (
+                  <Image
+                    source={{ uri: `${BASE_URL}${user.profile_image}` }}
+                    style={styles.profileImage}
+                  />
+                ) : (
+                  <View style={styles.placeholderImage} />
+                )}
+                <View style={{ marginLeft: 10 }}>
+                  <Text style={styles.userName}>{user.name}</Text>
+                  {user.job_role && <Text style={styles.jobRole}>{user.job_role}</Text>}
+                </View>
+              </View>
+
+              <Text style={styles.caption}>{post.caption}</Text>
+
+              {post.image && (
+                <Image
+                  source={{ uri: `${BASE_URL}${post.image}` }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+              )}
+            </View>
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -86,7 +125,32 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     elevation: 2,
   },
-  caption: { fontSize: 16, fontWeight: 'bold' },
+  userRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#ccc',
+  },
+  placeholderImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#ccc',
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  jobRole: {
+    fontSize: 13,
+    color: '#555',
+  },
+  caption: { fontSize: 15, marginVertical: 5 },
   image: { width: '100%', height: 200, marginTop: 10, borderRadius: 6 },
   error: { color: 'red', marginBottom: 10 },
 });

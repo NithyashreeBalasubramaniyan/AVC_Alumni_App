@@ -12,8 +12,8 @@ const createPost = async (req, res) => {
     const { caption, token } = req.body;
     const file = req.file;
 
-    // Get file path and convert to public URL
-    const imagePath = file ? `${req.protocol}://${req.get('host')}/${file.path.replace(/\\/g, '/')}` : null;
+    // Use relative path only
+    const imagePath = file ? `/${file.path.replace(/\\/g, '/')}` : null;
 
     let studentId = null;
     let alumniId = null;
@@ -29,7 +29,7 @@ const createPost = async (req, res) => {
     const post = await prisma.post.create({
       data: {
         caption,
-        image: imagePath, // ✅ full URL stored
+        image: imagePath,
         role,
         studentId,
         alumniId,
@@ -50,10 +50,16 @@ const createPost = async (req, res) => {
   }
 };
 
+
 // get all post
 const getPost = async (req, res) =>{
     try{
-        const allPost = await prisma.post.findMany()
+        const allPost = await prisma.post.findMany({
+        include: {
+        student: { select: { name: true, job_role: true, profile_image: true } },
+        alumni: { select: { name: true, job_role: true, profile_image: true } },
+        teacher: { select: { name: true, job_role: true, profile_image: true } },
+      }})
         res.status(200).json({success: true, message: "get all posts", data: allPost })
     }
     catch (err) {
