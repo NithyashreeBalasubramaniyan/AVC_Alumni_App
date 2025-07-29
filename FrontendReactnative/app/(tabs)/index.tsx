@@ -22,7 +22,7 @@ const App = () => {
 
   const fetchPosts = () => {
     setError('');
-    axios.get<{ data: Post[] }>('http://192.168.171.47:3000/api/post/getall')
+    axios.get<{ data: Post[] }>(`${BASE_URL}/api/post/getall`)
       .then(res => {
         const sortedPosts = (res.data.data || []).sort((a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

@@ -7,11 +7,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Platform,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import { launchImageLibrary } from 'react-native-image-picker';
-import { BASE_URL } from '@/constant';
+import { BASE_URL } from '@/constant'; 
+
+const token ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGUiOiJzdHVkZW50IiwiaWF0IjoxNzUzNTUxMDMwLCJleHAiOjE3NTQxNTU4MzB9.b6Xo5HpQtHbXb7FfN5qdSKQhnXK-utxm9Xryx5MhD_o';
 
 type SelectedImage = {
   uri: string;
@@ -19,32 +20,39 @@ type SelectedImage = {
   type: string;
 };
 
-// Replace with actual base URL
-
 const PostScreen: React.FC = () => {
   const [caption, setCaption] = useState('');
   const [image, setImage] = useState<SelectedImage | null>(null);
 
-  const token = 'your_jwt_token_here'; // Replace this with actual JWT token
+  const requestStoragePermission = async (): Promise<boolean> => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Cannot access media library.');
+      return false;
+    }
+    return true;
+  };
 
   const selectImage = async () => {
-    launchImageLibrary({ mediaType: 'photo' }, (response) => {
-      if (response.didCancel || response.errorCode || !response.assets) {
-        Alert.alert('Image selection cancelled or failed.');
-        return;
-      }
+    const hasPermission = await requestStoragePermission();
+    if (!hasPermission) return;
 
-      const asset = response.assets[0];
-
-      if (asset && asset.uri && asset.fileName && asset.type) {
-        const selectedImage: SelectedImage = {
-          uri: Platform.OS === 'ios' ? asset.uri.replace('file://', '') : asset.uri,
-          name: asset.fileName,
-          type: asset.type,
-        };
-        setImage(selectedImage);
-      }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
     });
+
+    if (!result.canceled && result.assets.length > 0) {
+      const asset = result.assets[0];
+      setImage({
+        uri: asset.uri,
+        name: asset.fileName || 'photo.jpg',
+        type: asset.type || 'image/jpeg',
+      });
+    } else {
+      Alert.alert('Image selection cancelled.');
+    }
   };
 
   const handlePost = async () => {
@@ -68,53 +76,52 @@ const PostScreen: React.FC = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
-      Alert.alert('Post Successful!', JSON.stringify(res.data));
-    } catch (error: any) {
-      console.error(error);
-      Alert.alert('Upload failed', error?.response?.data?.message || error.message);
+
+      Alert.alert('Success', 'Post uploaded!');
+      setCaption('');
+      setImage(null);
+    } catch (err: any) {
+      console.error(err);
+      Alert.alert('Upload failed', err?.message || 'An error occurred');
     }
   };
 
   return (
     <View style={styles.container}>
+      {/* Profile and Header */}
       <View style={styles.profileContainer}>
         <Image
           source={{ uri: 'https://i.pravatar.cc/100' }}
           style={styles.avatar}
         />
         <View style={styles.profileInfo}>
-          <Text style={styles.name}>MohammedTharik</Text>
-          <Text style={styles.role}>Software Developer @ Trace One</Text>
+          <Text style={styles.name}>Mohammed Tharik</Text>
+          <Text style={styles.role}>Student @ AVC</Text>
         </View>
         <TouchableOpacity style={styles.postButton} onPress={handlePost}>
           <Text style={styles.postText}>POST</Text>
         </TouchableOpacity>
       </View>
 
+      {/* Caption */}
       <TextInput
-        placeholder="|Share your thoughts...."
+        placeholder="| Share your thoughts...."
         style={styles.input}
         value={caption}
         onChangeText={setCaption}
         multiline
       />
 
+      {/* Image Preview */}
       {image && <Image source={{ uri: image.uri }} style={styles.preview} />}
 
-     <TouchableOpacity
-  style={{
-    position: 'absolute',
-    right: 20,
-    bottom: 80, // <- Push it above the bottom tab bar
-    zIndex: 999,
-  }}
-  onPress={selectImage}
->
-  <Image
-    source={require('./logo.png')}
-    style={{ width: 40, height: 40 }}
-  />
-</TouchableOpacity>
+      {/* Upload Image Icon */}
+      <TouchableOpacity style={styles.uploadIcon} onPress={selectImage}>
+        <Image
+          source={require('./logo.png')} // ✅ Replace with your upload icon
+          style={{ width: 40, height: 40 }}
+        />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -165,6 +172,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     textAlignVertical: 'top',
+    marginTop: 10,
   },
   preview: {
     marginTop: 10,
@@ -174,7 +182,8 @@ const styles = StyleSheet.create({
   },
   uploadIcon: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 80,
     right: 20,
+    zIndex: 999,
   },
 });
