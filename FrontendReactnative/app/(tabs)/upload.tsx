@@ -7,14 +7,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Platform,
-  SafeAreaView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import { BASE_URL } from '@/constant'; 
+import { BASE_URL } from '@/constant';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 type SelectedImage = {
   uri: string;
@@ -27,13 +24,14 @@ const PostScreen: React.FC = () => {
   const [image, setImage] = useState<SelectedImage | null>(null);
   const [token, setToken] = useState('');
 
-  useEffect( () =>{
+  useEffect(() => {
     (async () => {
-            const token = await AsyncStorage.getItem('token');
-            console.log(JSON.parse(token || 'null'));
-          })();
-  }
-  ,[])
+      const storedToken = await AsyncStorage.getItem('token');
+      const parsedToken = storedToken ? JSON.parse(storedToken) : '';
+      setToken(parsedToken);
+      console.log(parsedToken);
+    })();
+  }, []);
 
   const requestStoragePermission = async (): Promise<boolean> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -67,19 +65,22 @@ const PostScreen: React.FC = () => {
   };
 
   const handlePost = async () => {
-    if (!caption || !image) {
-      Alert.alert('Please enter a caption and select an image');
+    if (!caption && !image) {
+      Alert.alert('Please enter a caption or select an image');
       return;
     }
 
     const formData = new FormData();
     formData.append('token', token);
     formData.append('caption', caption);
-    formData.append('image', {
-      uri: image.uri,
-      name: image.name,
-      type: image.type,
-    } as any);
+
+    if (image) {
+      formData.append('image', {
+        uri: image.uri,
+        name: image.name,
+        type: image.type,
+      } as any);
+    }
 
     try {
       const res = await axios.post(`${BASE_URL}/api/post/create`, formData, {
@@ -98,8 +99,7 @@ const PostScreen: React.FC = () => {
   };
 
   return (
-    < >
-      <View style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.profileContainer}>
         <Image
           source={{ uri: 'https://i.pravatar.cc/100' }}
@@ -129,12 +129,11 @@ const PostScreen: React.FC = () => {
       {/* Upload Image Icon */}
       <TouchableOpacity style={styles.uploadIcon} onPress={selectImage}>
         <Image
-          source={require('./assets/image.png')} 
+          source={require('./assets/image.png')}
           style={{ width: 40, height: 40 }}
         />
       </TouchableOpacity>
     </View>
-    </>
   );
 };
 

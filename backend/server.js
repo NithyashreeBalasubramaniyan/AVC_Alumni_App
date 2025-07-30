@@ -27,6 +27,7 @@ app.use('/api/post', postRoutes);
 app.use('/api/user', userRoutes);
 
 
+
 // Health check route
 app.get('/health', (req, res) => {
   res.json({ 

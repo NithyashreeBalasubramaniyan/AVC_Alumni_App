@@ -23,4 +23,6 @@ router.put('/update', upload.single('image'), updatePost);
 router.delete('/delete', deletePost);
 router.get('/search', searchPosts);
 
+
+
 module.exports = router;

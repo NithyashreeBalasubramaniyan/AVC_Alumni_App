@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
+const { getProfile } = require('./authController');
 const prisma = new PrismaClient();
 
 // Secure token verification
@@ -205,5 +206,8 @@ const searchPosts = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+
+
 
 module.exports = { createPost, getPost, updatePost, deletePost,searchPosts };

@@ -1,7 +1,7 @@
-// controllers/userController.js
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// Update profile
 const updateUserProfile = async (req, res) => {
   const { id, role, Linkedin_id, Experience, Gender, Company, job_role } = req.body;
 
@@ -40,4 +40,37 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
-module.exports = { updateUserProfile }; 
+// Get profile by registration number
+const getProfileByRegNo = async (req, res) => {
+  const { reg_no } = req.params;
+
+  try {
+    const student = await prisma.student.findUnique({
+      where: { reg_no },
+      select: {
+        name: true,
+        reg_no: true,
+        job_role: true,
+        Company: true,
+        profile_image: true,
+        Linkedin_id: true,
+        Experience: true,
+        Gender: true
+      }
+    });
+
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    res.status(200).json({ success: true, data: student });
+  } catch (err) {
+    console.error('Error fetching profile:', err);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+module.exports = {
+  updateUserProfile,
+  getProfileByRegNo
+};
