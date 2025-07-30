@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { BASE_URL } from "@/constant";
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import {
   View,
@@ -29,8 +30,9 @@ const handleLogin = async () => {
       reg_no: registerNumber,
       password: password,
     });
-
+      console.log()
       if (response.data.success) {
+        AsyncStorage.setItem('token', JSON.stringify(response.data.data.token)).catch(e => console.log(e.message))
         Alert.alert("Login Successful", "Welcome!");
         router.replace('/');
         Alert.alert("Happy login", response.data.message || "Invalid credentials");

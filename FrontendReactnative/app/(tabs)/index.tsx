@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BASE_URL } from '@/constant';
 import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage'
 // @ts-ignore
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -73,8 +74,8 @@ const App = () => {
   };
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+      fetchPosts();
+    }, []);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {

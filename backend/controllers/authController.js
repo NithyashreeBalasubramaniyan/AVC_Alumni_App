@@ -150,6 +150,8 @@ const loginalumni = async (req, res) => {
         message: 'Invalid credentials'
       });
     }
+    // Generate JWT token
+    const token = generateToken(alumni.id, "alumni");
 
     // Debug JWT secret
     console.log('JWT_SECRET:', process.env.JWT_SECRET);
@@ -166,7 +168,8 @@ const loginalumni = async (req, res) => {
           ph_no: alumni.ph_no,
           dob: alumni.dob,
           is_verified: alumni.is_verified
-        }
+        },
+        token
       }
     });
 
@@ -319,6 +322,9 @@ const loginStudent = async (req, res) => {
       });
     }
 
+    // Generate JWT token
+    const token = generateToken(student.id, "student");
+
     // Debug JWT secret
     console.log('JWT_SECRET:', process.env.JWT_SECRET);
     console.log('JWT_EXPIRE:', process.env.JWT_EXPIRE);
@@ -334,7 +340,8 @@ const loginStudent = async (req, res) => {
           ph_no: student.ph_no,
           dob: student.dob,
           is_verified: student.is_verified
-        }
+        },
+        token
       }
     });
 
@@ -484,6 +491,9 @@ const loginTeacher = async (req, res) => {
       });
     }
 
+    // Generate JWT token
+    const token = generateToken(teacher.id, "teacher");
+
     // Debug JWT secret
     console.log('JWT_SECRET:', process.env.JWT_SECRET);
     console.log('JWT_EXPIRE:', process.env.JWT_EXPIRE);
@@ -500,7 +510,8 @@ const loginTeacher = async (req, res) => {
           ph_no: teacher.ph_no,
           dob: teacher.dob,
           is_verified: teacher.is_verified
-        }
+        },
+        token
       }
     });
 

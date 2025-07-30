@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -13,8 +13,8 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { BASE_URL } from '@/constant'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const token ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjE1LCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc1Mzg1NDE3NCwiZXhwIjoxNzg1MzkwMTc0fQ.5MX3Yr4In1YrsVHWzRIo2SWlgwzcvF8d06hGX-mhHAc';
 
 type SelectedImage = {
   uri: string;
@@ -25,6 +25,15 @@ type SelectedImage = {
 const PostScreen: React.FC = () => {
   const [caption, setCaption] = useState('');
   const [image, setImage] = useState<SelectedImage | null>(null);
+  const [token, setToken] = useState('');
+
+  useEffect( () =>{
+    (async () => {
+            const token = await AsyncStorage.getItem('token');
+            console.log(JSON.parse(token || 'null'));
+          })();
+  }
+  ,[])
 
   const requestStoragePermission = async (): Promise<boolean> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
