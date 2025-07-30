@@ -171,5 +171,39 @@ const deletePost = async (req, res) => {
   }
 };
 
+//search posts
 
-module.exports = { createPost, getPost, updatePost, deletePost };
+const searchPosts = async (req, res) => {
+  try {
+    const { name } = req.query;
+
+    if (!name) {
+      return res.status(400).json({ message: 'Search term is required' });
+    }
+
+    const posts = await prisma.post.findMany({
+      where: {
+        OR: [
+          { student: { name: { contains: name, mode: 'insensitive' } } },
+          { alumni: { name: { contains: name, mode: 'insensitive' } } },
+          { teacher: { name: { contains: name, mode: 'insensitive' } } },
+        ],
+      },
+      include: {
+        student: true,
+        alumni: true,
+        teacher: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    res.json({ data: posts });
+  } catch (error) {
+    console.error('Search Error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+module.exports = { createPost, getPost, updatePost, deletePost,searchPosts };

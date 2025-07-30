@@ -120,7 +120,7 @@ const PostScreen: React.FC = () => {
       {/* Upload Image Icon */}
       <TouchableOpacity style={styles.uploadIcon} onPress={selectImage}>
         <Image
-          source={require('./logo.png')} // ✅ Replace with your upload icon
+          source={require('./assets/image.png')} 
           style={{ width: 40, height: 40 }}
         />
       </TouchableOpacity>
