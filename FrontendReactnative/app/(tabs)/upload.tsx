@@ -14,7 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { BASE_URL } from '@/constant'; 
 
-const token ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGUiOiJzdHVkZW50IiwiaWF0IjoxNzUzNTUxMDMwLCJleHAiOjE3NTQxNTU4MzB9.b6Xo5HpQtHbXb7FfN5qdSKQhnXK-utxm9Xryx5MhD_o';
+const token ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjE1LCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc1Mzg1NDE3NCwiZXhwIjoxNzg1MzkwMTc0fQ.5MX3Yr4In1YrsVHWzRIo2SWlgwzcvF8d06hGX-mhHAc';
 
 type SelectedImage = {
   uri: string;

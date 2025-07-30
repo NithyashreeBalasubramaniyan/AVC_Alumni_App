@@ -5,53 +5,53 @@ const prisma = new PrismaClient();
 async function main() {
   
   // Create a sample student
-  // await prisma.existingStudent.createMany({
-  //   "data": [{
-  //   "name": "Student",
-  //   "reg_no": "111111111111",
-  //   "dob": new Date("2000-01-01"),
-  //   "mail": "Student@gmail.com"
-  // },
-  // {
-  //   "name": "Student2",
-  //   "reg_no": "222222222222",
-  //   "dob": new Date("2000-01-01"),
-  //   "mail": "Student2@gmail.com"
-  // }
-  // ]   
-  // })
+//   await prisma.existingStudent.createMany({
+//     "data": [{
+//     "name": "Student",
+//     "reg_no": "111111111118",
+//     "dob": new Date("2000-01-01"),
+//     "mail": "Student@gmail.com"
+//   },
+//   {
+//     "name": "Student2",
+//     "reg_no": "222222222229",
+//     "dob": new Date("2000-01-01"),
+//     "mail": "Student3@gmail.com"
+//   }
+//   ]   
+//   })
 
-  // await prisma.existingalumni.createMany({
-  //   "data": [{
-  //   "name": "alumni",
-  //   "reg_no": "111111111111",
-  //   "dob": new Date("2000-01-01"),
-  //   "mail": "alumni@gmail.com"
-  // },
-  // {
-  //   "name": "alumni2",
-  //   "reg_no": "222222222222",
-  //   "dob": new Date("2000-01-01"),
-  //   "mail": "alumni@gmail.com"
-  // }
-  // ]   
-  // })
+//   await prisma.existingalumni.createMany({
+//     "data": [{
+//     "name": "alumni",
+//     "reg_no": "111111111114",
+//     "dob": new Date("2000-01-01"),
+//     "mail": "alumni@gmail.com"
+//   },
+//   {
+//     "name": "alumni2",
+//     "reg_no": "222222222225",
+//     "dob": new Date("2000-01-01"),
+//     "mail": "alumni@gmail.com"
+//   }
+//   ]   
+//   })
 
-  // await prisma.existingTeacher.createMany({
-  //   "data": [{
-  //   "name": "teacher",
-  //   "reg_no": "1111",
-  //   "dob": new Date("2000-01-01"),
-  //   "mail": "teacher@gmail.com"
-  // },
-  // {
-  //   "name": "teacher2",
-  //   "reg_no": "2222",
-  //   "dob": new Date("2000-01-01"),
-  //   "mail": "teacher2@gmail.com"
-  // }
-  // ]   
-  // })
+//   await prisma.existingTeacher.createMany({
+//     "data": [{
+//     "name": "teacher",
+//     "reg_no": "1113",
+//     "dob": new Date("2000-01-01"),
+//     "mail": "teacher@gmail.com"
+//   },
+//   {
+//     "name": "teacher2",
+//     "reg_no": "2224",
+//     "dob": new Date("2000-01-01"),
+//     "mail": "teacher2@gmail.com"
+//   }
+//   ]   
+//   })
 
 //   await prisma.student.createMany({
 //     data: [
@@ -126,9 +126,11 @@ async function main() {
 //     profile_image: "/uploads/hari.jpg"
 //   }
 // ]
-  // })
+//   })
 
-// await prisma.post.deleteMany()
+  //  await prisma.Student.deleteMany()
+
+//  await prisma.post.deleteMany()
 
 
   await prisma.post.createMany({
@@ -137,31 +139,31 @@ async function main() {
     caption: "Exploring new opportunities at Infosys!",
     image: "/uploads/post(1).JPEG",
     role: "STUDENT",
-    studentId: 1
+    studentId: 8
   },
   {
     caption: "Thrilled to share my recent design at TCS!",
     image: "/uploads/post(2).JPEG",
     role: "STUDENT",
-    studentId: 2
+    studentId: 9
   },
   {
     caption: "Backend systems are fun to build!",
     image: "/uploads/post(3).JPEG",
     role: "STUDENT",
-    studentId: 3
+    studentId: 10
   },
   {
     caption: "QA is all about perfection. Loving my job!",
     image: "/uploads/post(4).JPEG",
     role: "STUDENT",
-    studentId: 4
+    studentId: 11
   },
   {
     caption: "DevOps journey has been amazing so far.",
     image: "/uploads/post(5).JPEG",
     role: "STUDENT",
-    studentId: 5
+    studentId: 12
   }
 ]
 })
