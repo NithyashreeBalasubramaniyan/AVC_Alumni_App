@@ -566,7 +566,7 @@ const verify = async (req, res) => {
     res.json({
       success: true,
       data: {
-        reg_no : user.userId,
+        id : user.userId,
         role: user.role
       }
     });

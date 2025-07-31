@@ -41,7 +41,7 @@ export default function UpdateProfile() {
     experience: "",
     technologies: "",
     batch: "",
-    gender: "",
+    gender: ""
   });
 
   const handleChange = (field: string, value: string) => {
@@ -62,15 +62,28 @@ export default function UpdateProfile() {
         setToken(storedToken || 'null');
 
         if (storedToken) {
-          const response = await axios.post(`${BASE_URL}/api/auth/verify`, {
-            token: storedToken,
-          });
+          const response = await axios.post(`${BASE_URL}/api/user/profile`, {
+            token: storedToken });
+            if (response.data.success) {
+              const data = response.data.data;
 
-          setId(response.data.reg_no); // adjust key names as per your backend response
-          setRole(response.data.role);
+              setFormData((prev) => ({
+                ...prev,
+                name: data.name || "",
+                linkedin: data.Linkedin_id || "",
+                company: data.Company || "",
+                jobRole: (data.role==='student'?"Student":data.job_role || ""),
+                experience: data.Experience?.toString() || "",
+                gender: data.Gender || "",
+                // The following fields are not provided by backend:
+                email: prev.email,
+                technologies: prev.technologies,
+                batch: prev.batch,
+              }));
+            }
 
-          console.log('✅ Token loaded from AsyncStorage. Length:', storedToken.length);
-          console.log('👉 Response:', response.data);
+          console.log('✅ Token loaded from AsyncStorage');
+
         } else {
           console.warn('⚠️ No token found in AsyncStorage. User might not be logged in.');
         }
@@ -83,14 +96,10 @@ export default function UpdateProfile() {
       }
     };
     loadToken();
-    console.log({id, role})
+
   }, []);
 
-   React.useEffect(() => {
-    if (id && role) {
-      console.log({ id, role });
-    }
-  }, [id, role]);
+   
 
  
 

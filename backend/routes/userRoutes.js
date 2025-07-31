@@ -14,6 +14,6 @@ const upload = multer({ storage });
 router.post('/update', upload.single('profile_image'), updateUserProfile);
 
 // GET profile by reg no
-router.get('/profile/:reg_no', getProfileByRegNo);
+router.post('/profile', getProfileByRegNo);
 
 module.exports = router;

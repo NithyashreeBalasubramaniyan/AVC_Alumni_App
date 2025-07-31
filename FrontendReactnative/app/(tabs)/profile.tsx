@@ -50,10 +50,10 @@ const ProfileScreen = () => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await axios.get<ProfileResponse>(
-        `${BASE_URL}/api/user/profile/${registrationNumber}`,
+      const response = await axios.post<ProfileResponse>(
+        `${BASE_URL}/api/user/profile/`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+         token 
         }
       );
       if (response.data.success) {
