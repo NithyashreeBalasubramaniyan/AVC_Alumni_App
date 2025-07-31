@@ -138,7 +138,7 @@ const PostScreen: React.FC = () => {
     // Log FormData contents for debugging purposes (React Native FormData does not support .entries())
     console.log('📦 Sending FormData (fields only):');
     console.log('  caption:', caption.trim());
-    console.log('  token:', token.substring(0, 10) + '...');
+    console.log('  token:', token ? token.substring(0, 50) + '...' : '');
     if (image) {
       console.log('  image:', { uri: image.uri, name: image.name, type: image.type });
     }

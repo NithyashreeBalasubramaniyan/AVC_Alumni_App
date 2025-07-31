@@ -68,7 +68,7 @@ const handleLogin = async () => {
           placeholderTextColor="#999"
           value={registerNumber}
           keyboardType="numeric"
-          onChangeText={() => setRegisterNumber("1111")}
+          onChangeText={setRegisterNumber}
         />
         <TextInput
           style={styles.input}
@@ -77,7 +77,7 @@ const handleLogin = async () => {
           placeholderTextColor="#999"
           secureTextEntry
           value={password}
-          onChangeText={() => setPassword("password")}
+          onChangeText={setPassword }
         />
 
         <TouchableOpacity style={styles.signInButton} onPress={handleLogin}>
