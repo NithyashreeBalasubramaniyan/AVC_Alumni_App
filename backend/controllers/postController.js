@@ -12,16 +12,10 @@ const decodeToken = (token) => {
 
 const createPost = async (req, res) => {
   try {
-    const { caption } = req.body;
+    const { caption, token } = req.body;
     const file = req.file;
 
-    // ✅ Get token from header
-    const authHeader = req.headers['authorization'];
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'Missing or malformed token' });
-    }
-
-    const token = authHeader.split(' ')[1];
+  
     const jwtResult = decodeToken(token);
     if (!jwtResult) {
       return res.status(401).json({ message: 'Invalid or expired token' });

@@ -135,12 +135,12 @@ const PostScreen: React.FC = () => {
       } as any); // 'as any' is used to satisfy TypeScript for appending Blob/File-like objects
     }
 
-    // Log FormData contents for debugging purposes (React Native FormData does not support .entries())
+    // Log FormData contents for debugging purposes (React Native FormData does not support entries())
     console.log('📦 Sending FormData (fields only):');
-    console.log('  caption:', caption.trim());
-    console.log('  token:', token ? token.substring(0, 50) + '...' : '');
+    console.log(`  caption: ${caption.trim().substring(0, 50)}...`);
+    console.log(`  token: ${token.substring(0, 30)}...`);
     if (image) {
-      console.log('  image:', { uri: image.uri, name: image.name, type: image.type });
+      console.log(`  image: { uri: ${image.uri}, name: ${image.name}, type: ${image.type} }`);
     }
 
 
@@ -258,7 +258,6 @@ const PostScreen: React.FC = () => {
 
 export default PostScreen;
 
-// 🧾 Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -275,23 +274,24 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    marginRight: 10,
   },
   profileInfo: {
     marginLeft: 10,
     flex: 1, // Allows info to take up available space
   },
   name: {
-    fontWeight: '600',
+    fontWeight: 'bold',
     fontSize: 16,
     color: '#333',
   },
   role: {
     fontSize: 12,
-    color: '#666',
+    color: 'gray',
   },
   postButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#5e8df2',
+    borderRadius: 15,
+    paddingHorizontal: 14,
     paddingVertical: 6,
     minWidth: 70, // Ensure button has a consistent width for loader
     justifyContent: 'center',
