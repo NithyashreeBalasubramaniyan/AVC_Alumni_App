@@ -14,6 +14,9 @@ import {
 } from "react-native";
 import RNPickerSelect from "react-native-picker-select";
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from "axios";
+import { BASE_URL } from "@/constant";
 
 const { height: screenHeight } = Dimensions.get("window");
 
@@ -24,6 +27,10 @@ export default function UpdateProfile() {
   const companyRef = useRef<TextInput>(null);
   const roleRef = useRef<TextInput>(null);
   const techRef = useRef<TextInput>(null);
+
+  const [token, setToken] = React.useState('')
+  const [id, setId] = React.useState(null);
+  const [role, setRole] = React.useState(null);
 
   const [formData, setFormData] = React.useState({
     name: "",
@@ -44,8 +51,48 @@ export default function UpdateProfile() {
   const handleSubmit = () => {
     console.log(formData);
     // Handle submit (e.g., send data to an API)
+    axios.patch(`${BASE_URL}/api/user/update-profile`, formData)
     alert("Profile Updated!"); // Simple alert for demonstration
   };
+
+  React.useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('token');
+        setToken(storedToken || 'null');
+
+        if (storedToken) {
+          const response = await axios.post(`${BASE_URL}/api/auth/verify`, {
+            token: storedToken,
+          });
+
+          setId(response.data.reg_no); // adjust key names as per your backend response
+          setRole(response.data.role);
+
+          console.log('✅ Token loaded from AsyncStorage. Length:', storedToken.length);
+          console.log('👉 Response:', response.data);
+        } else {
+          console.warn('⚠️ No token found in AsyncStorage. User might not be logged in.');
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.error('❌ Axios error:', error.response?.data || error.message);
+        } else {
+          console.error('❌ Unknown error:', error);
+        }
+      }
+    };
+    loadToken();
+    console.log({id, role})
+  }, []);
+
+   React.useEffect(() => {
+    if (id && role) {
+      console.log({ id, role });
+    }
+  }, [id, role]);
+
+ 
 
   return (
     <SafeAreaView style={styles.safeArea}>

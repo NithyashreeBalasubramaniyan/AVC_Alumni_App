@@ -32,7 +32,7 @@ const handleLogin = async () => {
     });
       console.log()
       if (response.data.success) {
-        AsyncStorage.setItem('token', JSON.stringify(response.data.data.token)).catch(e => console.log(e.message))
+        AsyncStorage.setItem('token', response.data.data.token).catch(e => console.log(e.message))
         Alert.alert("Login Successful", "Welcome!");
         router.replace('/');
         Alert.alert("Happy login", response.data.message || "Invalid credentials");
@@ -68,7 +68,7 @@ const handleLogin = async () => {
           placeholderTextColor="#999"
           value={registerNumber}
           keyboardType="numeric"
-          onChangeText={setRegisterNumber}
+          onChangeText={() => setRegisterNumber("1111")}
         />
         <TextInput
           style={styles.input}
@@ -77,7 +77,7 @@ const handleLogin = async () => {
           placeholderTextColor="#999"
           secureTextEntry
           value={password}
-          onChangeText={setPassword}
+          onChangeText={() => setPassword("password")}
         />
 
         <TouchableOpacity style={styles.signInButton} onPress={handleLogin}>
