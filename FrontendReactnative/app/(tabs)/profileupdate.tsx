@@ -41,7 +41,9 @@ export default function UpdateProfile() {
     experience: "",
     technologies: "",
     batch: "",
-    gender: ""
+    gender: "",
+    id: "",
+    role: ""
   });
 
   const handleChange = (field: string, value: string) => {
@@ -73,12 +75,14 @@ export default function UpdateProfile() {
                 linkedin: data.Linkedin_id || "",
                 company: data.Company || "",
                 jobRole: (data.role==='student'?"Student":data.job_role || ""),
-                experience: data.Experience?.toString() || "",
+                experience: data.Experience || "",
                 gender: data.Gender || "",
                 // The following fields are not provided by backend:
-                email: prev.email,
+                email: data.mail,
                 technologies: prev.technologies,
                 batch: prev.batch,
+                id: data.id,
+                role: data.role
               }));
             }
 

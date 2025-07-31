@@ -71,6 +71,7 @@ const getProfileByRegNo = async (req, res) => {
         id: true,
         name: true,
         reg_no: true,
+        mail: true,
         job_role: true,
         Company: true,
         profile_image: true,
