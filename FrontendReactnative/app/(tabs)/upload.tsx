@@ -7,10 +7,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import axios from 'axios';
-import { BASE_URL } from '@/constant';
+import axios, { AxiosError } from 'axios';
+import { BASE_URL } from '@/constant'; // Make sure this is correct
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type SelectedImage = {
@@ -22,17 +23,26 @@ type SelectedImage = {
 const PostScreen: React.FC = () => {
   const [caption, setCaption] = useState('');
   const [image, setImage] = useState<SelectedImage | null>(null);
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState<string | null>(null);
 
+  // Load token from AsyncStorage
   useEffect(() => {
     (async () => {
-      const storedToken = await AsyncStorage.getItem('token');
-      const parsedToken = storedToken ? JSON.parse(storedToken) : '';
-      setToken(parsedToken);
-      console.log(parsedToken);
+      try {
+        const storedToken = await AsyncStorage.getItem('token');
+        if (storedToken) {
+          setToken(storedToken);
+          console.log('✅ Token loaded:', storedToken);
+        } else {
+          console.warn('⚠️ No token found');
+        }
+      } catch (err) {
+        console.error('❌ Error fetching token:', err);
+      }
     })();
   }, []);
 
+  // Request permission for gallery
   const requestStoragePermission = async (): Promise<boolean> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -42,6 +52,7 @@ const PostScreen: React.FC = () => {
     return true;
   };
 
+  // Pick image
   const selectImage = async () => {
     const hasPermission = await requestStoragePermission();
     if (!hasPermission) return;
@@ -49,29 +60,44 @@ const PostScreen: React.FC = () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      quality: 1,
+      quality: 0.8,
     });
 
     if (!result.canceled && result.assets.length > 0) {
       const asset = result.assets[0];
-      setImage({
-        uri: asset.uri,
-        name: asset.fileName || 'photo.jpg',
-        type: asset.type || 'image/jpeg',
-      });
+
+      // Optional size check
+      if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) {
+        Alert.alert('Image too large', 'Please select an image under 5MB.');
+        return;
+      }
+
+      const imageData: SelectedImage = {
+        uri: asset.uri, // ✅ keep file:// prefix
+        name: asset.fileName || `photo-${Date.now()}.jpg`,
+        type: 'image/jpeg', // ✅ ensure type
+      };
+
+      setImage(imageData);
+      console.log('📷 Image selected:', imageData);
     } else {
-      Alert.alert('Image selection cancelled.');
+      console.log('🚫 Selection cancelled');
     }
   };
 
+  // Submit post
   const handlePost = async () => {
     if (!caption && !image) {
-      Alert.alert('Please enter a caption or select an image');
+      Alert.alert('Missing Content', 'Add a caption or select an image.');
+      return;
+    }
+
+    if (!token) {
+      Alert.alert('Auth Error', 'You must be logged in to post.');
       return;
     }
 
     const formData = new FormData();
-    formData.append('token', token);
     formData.append('caption', caption);
 
     if (image) {
@@ -83,18 +109,28 @@ const PostScreen: React.FC = () => {
     }
 
     try {
+      console.log('🚀 Uploading with token:', token);
       const res = await axios.post(`${BASE_URL}/api/post/create`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
         },
+        timeout: 30000,
       });
 
+      console.log('✅ Upload success:', res.data);
       Alert.alert('Success', 'Post uploaded!');
       setCaption('');
       setImage(null);
-    } catch (err: any) {
-      console.error(err);
-      Alert.alert('Upload failed', err?.message || 'An error occurred');
+    } catch (err: AxiosError | any) {
+      console.error('❌ Upload error:', err?.response?.data || err.message);
+      if (err.code === 'ECONNABORTED') {
+        Alert.alert('Timeout', 'Upload took too long. Try again.');
+      } else if (err?.response?.data?.message === 'Invalid or expired token') {
+        Alert.alert('Session Expired', 'Please log in again.');
+      } else {
+        Alert.alert('Error', err?.response?.data?.message || 'Upload failed');
+      }
     }
   };
 
@@ -114,7 +150,6 @@ const PostScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Caption */}
       <TextInput
         placeholder="| Share your thoughts...."
         style={styles.input}
@@ -123,10 +158,13 @@ const PostScreen: React.FC = () => {
         multiline
       />
 
-      {/* Image Preview */}
-      {image && <Image source={{ uri: image.uri }} style={styles.preview} />}
+      {image && (
+        <Image
+          source={{ uri: image.uri }}
+          style={styles.preview}
+        />
+      )}
 
-      {/* Upload Image Icon */}
       <TouchableOpacity style={styles.uploadIcon} onPress={selectImage}>
         <Image
           source={require('./assets/image.png')}
@@ -139,12 +177,13 @@ const PostScreen: React.FC = () => {
 
 export default PostScreen;
 
+// 🧾 Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 15,
-    paddingVertical: 35,
-    backgroundColor: '#f4f4f4',
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    backgroundColor: '#fff',
   },
   profileContainer: {
     flexDirection: 'row',
@@ -155,47 +194,45 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
+    marginRight: 10,
   },
   profileInfo: {
-    marginLeft: 10,
     flex: 1,
   },
   name: {
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontSize: 16,
   },
   role: {
     fontSize: 12,
-    color: 'gray',
+    color: '#666',
   },
   postButton: {
-    backgroundColor: '#5e8df2',
-    borderRadius: 15,
-    paddingHorizontal: 14,
+    backgroundColor: '#007AFF',
     paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 20,
   },
   postText: {
     color: '#fff',
     fontWeight: 'bold',
   },
   input: {
-    minHeight: 100,
-    padding: 12,
-    backgroundColor: '#fff',
+    height: 100,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    padding: 10,
     borderRadius: 10,
+    marginBottom: 10,
     textAlignVertical: 'top',
-    marginTop: 10,
   },
   preview: {
-    marginTop: 10,
     width: '100%',
     height: 200,
     borderRadius: 10,
+    marginBottom: 10,
   },
   uploadIcon: {
-    position: 'absolute',
-    bottom: 80,
-    right: 20,
-    zIndex: 999,
+    alignSelf: 'flex-end',
   },
 });

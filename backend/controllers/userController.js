@@ -41,6 +41,10 @@ const updateUserProfile = async (req, res) => {
 };
 
 // Get profile by registration number
+const { Router } = require('express');
+const { param, validationResult } = require('express-validator');
+const router = Router();
+
 const getProfileByRegNo = async (req, res) => {
   const { reg_no } = req.params;
 
@@ -55,8 +59,8 @@ const getProfileByRegNo = async (req, res) => {
         profile_image: true,
         Linkedin_id: true,
         Experience: true,
-        Gender: true
-      }
+        Gender: true,
+      },
     });
 
     if (!student) {
@@ -65,12 +69,24 @@ const getProfileByRegNo = async (req, res) => {
 
     res.status(200).json({ success: true, data: student });
   } catch (err) {
-    console.error('Error fetching profile:', err);
+    console.error(`Error fetching profile for reg_no ${reg_no}:`, err);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
 
+router.get(
+  '/profile/:reg_no',
+  param('reg_no').notEmpty().withMessage('Registration number is required'),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    getProfileByRegNo(req, res);
+  }
+);
+
 module.exports = {
   updateUserProfile,
-  getProfileByRegNo
+  getProfileByRegNo,
 };

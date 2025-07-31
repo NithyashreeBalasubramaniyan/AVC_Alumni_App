@@ -1,32 +1,37 @@
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
-const { getProfile } = require('./authController');
 const prisma = new PrismaClient();
 
-// Secure token verification
 const decodeToken = (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET); // ✅ Use verify
+    return jwt.verify(token, process.env.JWT_SECRET);
   } catch (err) {
-    return null; // Will return "Invalid or expired token"
+    return null;
   }
 };
 
-// Create Post
 const createPost = async (req, res) => {
   try {
-    const { caption, token } = req.body;
+    const { caption } = req.body;
     const file = req.file;
-    const jwtResult = decodeToken(token);
 
-    if (!jwtResult) return res.status(401).json({ message: 'Invalid or expired token' });
+    // ✅ Get token from header
+    const authHeader = req.headers['authorization'];
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Missing or malformed token' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const jwtResult = decodeToken(token);
+    if (!jwtResult) {
+      return res.status(401).json({ message: 'Invalid or expired token' });
+    }
 
     const imagePath = file ? `/${file.path.replace(/\\/g, '/')}` : null;
     const role = jwtResult.role.toUpperCase();
     const userId = jwtResult.userId;
 
     let studentId = null, alumniId = null, teacherId = null;
-
     if (role === 'STUDENT') studentId = userId;
     else if (role === 'ALUMNI') alumniId = userId;
     else if (role === 'TEACHER') teacherId = userId;
@@ -42,11 +47,14 @@ const createPost = async (req, res) => {
 
     const userName = post.student?.name || post.alumni?.name || post.teacher?.name || "Unknown";
     res.status(201).json({ ...post, userName });
-
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ message: err.message });
+    }
+    res.status(500).json({ message: err.message || 'An error occurred' });
   }
 };
+
 
 // Get All Posts
 const getPost = async (req, res) => {
