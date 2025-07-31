@@ -42,8 +42,7 @@ export default function SignInScreen() {
         }
       );
       if (response.data.success) {
-        await AsyncStorage.setItem('token', response.data.data.token);
-        await AsyncStorage.setItem('reg_no', registerNumber);
+        AsyncStorage.setItem('token', response.data.data.token).catch(e => console.log(e.message))
         Alert.alert("Login Successful", "Welcome!");
         router.replace({ pathname: '/profile', params: { reg_no: registerNumber } });
       }
@@ -75,7 +74,7 @@ export default function SignInScreen() {
           placeholderTextColor="#999"
           value={registerNumber}
           keyboardType="numeric"
-          onChangeText={setRegisterNumber}
+          onChangeText={() => setRegisterNumber("1111")}
         />
         <TextInput
           style={styles.input}
@@ -84,7 +83,7 @@ export default function SignInScreen() {
           placeholderTextColor="#999"
           secureTextEntry
           value={password}
-          onChangeText={setPassword}
+          onChangeText={() => setPassword("password")}
         />
         <TouchableOpacity style={styles.signInButton} onPress={handleLogin}>
           <Text style={styles.signInButtonText}>Sign in</Text>

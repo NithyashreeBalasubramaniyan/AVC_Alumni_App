@@ -5,6 +5,14 @@ const { validationResult } = require('express-validator');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+const decodeToken = (token) => {
+  try {
+    return jwt.verify(token, process.env.JWT_SECRET); // ✅ Use verify
+  } catch (err) {
+    return null; // Will return "Invalid or expired token"
+  }
+};
+
 // Generate JWT Token
 const generateToken = (userId, role) => {
   return jwt.sign(
@@ -547,6 +555,31 @@ const getProfile = async (req, res) => {
   }
 };
 
+
+//get reg no and role
+const verify = async (req, res) => {
+  try {
+    const { token } = req.body; // From auth middleware
+
+    const user = decodeToken(token, process.env.JWT_SECRET)
+
+    res.json({
+      success: true,
+      data: {
+        reg_no : user.userId,
+        role: user.role
+      }
+    });
+
+  } catch (error) {
+    console.error('Profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
 module.exports = {
   
   registeralumni,
@@ -560,5 +593,7 @@ module.exports = {
   
   
   getProfile,
+
+  verify
 
 }; 

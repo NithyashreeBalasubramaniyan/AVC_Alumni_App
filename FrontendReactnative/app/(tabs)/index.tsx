@@ -36,6 +36,7 @@ const App = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [error, setError] = useState('');
   const [searchText, setSearchText] = useState('');
+  const [token, setToken] = useState<string>('')
 
   const fetchPosts = () => {
     setError('');
@@ -76,6 +77,23 @@ const App = () => {
   useEffect(() => {
       fetchPosts();
     }, []);
+
+  useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('token');
+        setToken(storedToken || "null");
+        if (storedToken) {
+          console.log('✅ Token loaded successfully from AsyncStorage. Length:', storedToken);
+        } else {
+          console.warn('⚠️ No token found in AsyncStorage. User might not be logged in.');
+        }
+      } catch (error) {
+        console.error('❌ Failed to load token from AsyncStorage:', error);
+      }
+    };
+    loadToken();
+  }, []);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {

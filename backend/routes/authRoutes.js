@@ -10,6 +10,8 @@ const {
   registerTeacher,
   loginTeacher,
   
+  verify,
+  
   createPost,
   getProfile
 } = require('../controllers/authController');
@@ -54,5 +56,7 @@ router.post('/login/teacher', loginValidation, loginTeacher);
 
 
 router.get('/profile', authenticateToken, getProfile);
+
+router.post('/verify', verify);
 
 module.exports = router; 
