@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { BASE_URL } from "@/constant";
-import AsyncStorage from '@react-native-async-storage/async-storage'
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -12,40 +11,53 @@ import {
   SafeAreaView,
   Alert,
 } from "react-native";
-import axios from "axios";
+import axios, { AxiosError } from "axios"; // Import AxiosError
 import { useRouter } from "expo-router";
 
-
-
+interface LoginResponse {
+  success: boolean;
+  data: {
+    token: string;
+  };
+  message?: string;
+}
 
 export default function SignInScreen() {
   const [registerNumber, setRegisterNumber] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter(); 
+  const router = useRouter();
 
-const handleLogin = async () => {
-  
-  try {
-    const response = await axios.post(`${BASE_URL}/api/auth/login/student`, {
-      reg_no: registerNumber,
-      password: password,
-    });
-      console.log()
+  const handleLogin = async () => {
+    if (!registerNumber || !password) {
+      Alert.alert("Error", "Please enter both register number and password");
+      return;
+    }
+
+    try {
+      const response = await axios.post<LoginResponse>(
+        `${BASE_URL}/api/auth/login/student`,
+        {
+          reg_no: registerNumber,
+          password: password,
+        }
+      );
       if (response.data.success) {
         AsyncStorage.setItem('token', response.data.data.token).catch(e => console.log(e.message))
         Alert.alert("Login Successful", "Welcome!");
-        router.replace('/');
-        Alert.alert("Happy login", response.data.message || "Invalid credentials");
+        router.replace({ pathname: '/profile', params: { reg_no: registerNumber } });
       }
-    } catch (error: any) {
-      console.error(error);
-      Alert.alert("Error", error?.response?.data?.message || "Server error");
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string }>;
+      console.error('Login error:', axiosError);
+      Alert.alert(
+        "Error",
+        axiosError.response?.data?.message || "Server error"
+      );
     }
-  } 
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Logo at the top */}
       <View style={styles.logoContainer}>
         <Image source={require("../assets/avc app logo.png")} style={styles.logo} />
         <Text style={styles.logoText}>
@@ -53,15 +65,9 @@ const handleLogin = async () => {
           <Text style={styles.connectText}>Connect</Text>
         </Text>
       </View>
-
-      {/* Login Card */}
       <View style={styles.card}>
-        <Image
-          source={require("../assets/student.png")}
-          style={styles.avatar}
-        />
+        <Image source={require("../assets/student.png")} style={styles.avatar} />
         <Text style={styles.loginText}>Login</Text>
-
         <TextInput
           style={styles.input}
           placeholder="Enter register number"
@@ -79,11 +85,9 @@ const handleLogin = async () => {
           value={password}
           onChangeText={setPassword }
         />
-
         <TouchableOpacity style={styles.signInButton} onPress={handleLogin}>
           <Text style={styles.signInButtonText}>Sign in</Text>
         </TouchableOpacity>
-
         <Text style={styles.signupText}>
           Don’t have an account?{" "}
           <Text onPress={() => router.replace("/Student-signup")} style={styles.signupLink}>

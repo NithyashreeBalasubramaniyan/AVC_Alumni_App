@@ -258,6 +258,7 @@ const PostScreen: React.FC = () => {
 
 export default PostScreen;
 
+// 🧾 Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -274,24 +275,23 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
+    marginRight: 10,
   },
   profileInfo: {
     marginLeft: 10,
     flex: 1, // Allows info to take up available space
   },
   name: {
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontSize: 16,
     color: '#333',
   },
   role: {
     fontSize: 12,
-    color: 'gray',
+    color: '#666',
   },
   postButton: {
-    backgroundColor: '#5e8df2',
-    borderRadius: 15,
-    paddingHorizontal: 14,
+    backgroundColor: '#007AFF',
     paddingVertical: 6,
     minWidth: 70, // Ensure button has a consistent width for loader
     justifyContent: 'center',
