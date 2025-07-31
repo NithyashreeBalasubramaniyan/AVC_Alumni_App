@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const jwt = require('jsonwebtoken');
 const prisma = new PrismaClient();
 
 // Update profile
@@ -45,15 +46,32 @@ const { Router } = require('express');
 const { param, validationResult } = require('express-validator');
 const router = Router();
 
-const getProfileByRegNo = async (req, res) => {
-  const { reg_no } = req.params;
 
+const getProfileByRegNo = async (req, res) => {
+  const { token } = req.body;
+  
   try {
-    const student = await prisma.student.findUnique({
-      where: { reg_no },
+    const user = jwt.verify(token, process.env.JWT_SECRET);
+
+    const role = user.role;
+    const id = user.userId;
+
+    let model;
+    switch (role) {
+      case 'alumni': model = prisma.alumni; break;
+      case 'student': model = prisma.student; break;
+      case 'teacher': model = prisma.teacher; break;
+      default:
+        return res.status(400).json({ success: false, message: 'Invalid role' });
+    }
+
+    const userData = await model.findUnique({
+      where: { id },
       select: {
+        id: true,
         name: true,
         reg_no: true,
+        mail: true,
         job_role: true,
         Company: true,
         profile_image: true,
@@ -63,28 +81,18 @@ const getProfileByRegNo = async (req, res) => {
       },
     });
 
-    if (!student) {
-      return res.status(404).json({ success: false, message: 'Student not found' });
+    if (!userData) {
+      return res.status(404).json({ success: false, message: 'User data not found' });
     }
 
-    res.status(200).json({ success: true, data: student });
+    return res.status(200).json({ success: true, data: {...userData, role: role} });
   } catch (err) {
-    console.error(`Error fetching profile for reg_no ${reg_no}:`, err);
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
+    console.error("getProfile error:", err);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
 
-router.get(
-  '/profile/:reg_no',
-  param('reg_no').notEmpty().withMessage('Registration number is required'),
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
-    }
-    getProfileByRegNo(req, res);
-  }
-);
+
 
 module.exports = {
   updateUserProfile,

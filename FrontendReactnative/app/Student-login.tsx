@@ -83,7 +83,7 @@ export default function SignInScreen() {
           placeholderTextColor="#999"
           secureTextEntry
           value={password}
-          onChangeText={ setPassword}
+          onChangeText={setPassword }
         />
         <TouchableOpacity style={styles.signInButton} onPress={handleLogin}>
           <Text style={styles.signInButtonText}>Sign in</Text>

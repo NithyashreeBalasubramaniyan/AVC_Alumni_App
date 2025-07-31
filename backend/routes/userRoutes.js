@@ -11,9 +11,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Profile update with optional image upload
-router.post('/update', upload.single('profile_image'), updateUserProfile);
+router.patch('/update-profile', upload.single('profile_image'), updateUserProfile);
 
 // GET profile by reg no
-router.get('/profile/:reg_no', getProfileByRegNo);
+router.post('/profile', getProfileByRegNo);
 
 module.exports = router;
