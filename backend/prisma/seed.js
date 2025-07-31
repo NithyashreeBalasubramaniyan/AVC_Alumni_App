@@ -14,7 +14,7 @@ async function main() {
 //   },
 //   {
 //     "name": "Student2",
-//     "reg_no": "222222222229",
+//     "reg_no": "2222",
 //     "dob": new Date("2000-01-01"),
 //     "mail": "Student3@gmail.com"
 //   }
