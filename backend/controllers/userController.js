@@ -4,7 +4,8 @@ const prisma = new PrismaClient();
 
 // Update profile
 const updateUserProfile = async (req, res) => {
-  const { id, role, Linkedin_id, Experience, Gender, Company, job_role } = req.body;
+  // 1. Add 'Bio' to the destructured request body
+  const { id, role, Linkedin_id, Experience, Gender, Company, job_role, Bio } = req.body;
 
   if (!id || !role) {
     return res.status(400).json({ success: false, message: 'ID and role are required' });
@@ -31,6 +32,7 @@ const updateUserProfile = async (req, res) => {
         Company,
         job_role,
         profile_image,
+        Bio, // 2. Add 'Bio' to the data being updated
       },
     });
 
@@ -78,6 +80,7 @@ const getProfileByRegNo = async (req, res) => {
         Linkedin_id: true,
         Experience: true,
         Gender: true,
+        Bio: true, // 3. Add 'Bio' to the fields being selected
       },
     });
 

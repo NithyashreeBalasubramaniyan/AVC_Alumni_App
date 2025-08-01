@@ -7,60 +7,61 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ActivityIndicator, // Added for loading state
-  Platform, // Used for more robust file naming
+  ActivityIndicator,
+  Platform,
+  KeyboardAvoidingView,
+  ScrollView,
+  Modal, // To create a loading overlay
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import { BASE_URL } from '@/constant'; // Adjust path if needed based on your project structure
+import { BASE_URL } from '@/constant';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+// Import react-native-reanimated for smooth animations
+import Animated, { FadeIn, FadeInUp, Layout } from 'react-native-reanimated';
 
-// Define the type for a selected image, ensuring it matches FormData requirements
+// Define the type for a selected image
 type SelectedImage = {
   uri: string;
-  name: string; // File name, crucial for backend
-  type: string; // MIME type, crucial for backend
+  name: string;
+  type: string;
 };
 
 const PostScreen: React.FC = () => {
   const [caption, setCaption] = useState('');
   const [image, setImage] = useState<SelectedImage | null>(null);
-  const [token, setToken] = useState<string | null>(null); // Initialize as null, will be set on mount
-  const [loading, setLoading] = useState(false); // State for loading indicator
+  const [token, setToken] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false); // New state for modal overlay
 
-  // --- 1. Token Loading ---
+  const MAX_CAPTION_LENGTH = 500;
+
+  // --- 1. Token Loading (No changes to logic) ---
   useEffect(() => {
     const loadToken = async () => {
       try {
         const storedToken = await AsyncStorage.getItem('token');
-        // IMPORTANT: Assuming 'token' is stored as a plain JWT string.
-        // If your login flow does JSON.stringify(someObjectContainingToken),
-        // then you'll need to parse it here: e.g., JSON.parse(storedToken).tokenField
         setToken(storedToken);
-        if (storedToken) {
-          console.log('✅ Token loaded successfully from AsyncStorage. Length:', storedToken.length);
-          // Optional: If you want to visually confirm the token value (not recommended for prod)
-          // console.log('Loaded token snippet:', storedToken.substring(0, 30) + '...');
-        } else {
-          console.warn('⚠️ No token found in AsyncStorage. User might not be logged in.');
+        if (!storedToken) {
+          Alert.alert(
+            'Authentication Needed',
+            'You are not logged in. Please log in to create a post.'
+          );
         }
       } catch (error) {
-        console.error('❌ Failed to load token from AsyncStorage:', error);
-        Alert.alert('Error', 'Failed to load user session. Please log in again.');
+        Alert.alert('Error', 'Failed to load user session. Please try again.');
       }
     };
     loadToken();
-  }, []); // Empty dependency array means this runs once on component mount
+  }, []);
 
-  // --- 2. Image Picker Permissions ---
+  // --- 2. Image Picker Permissions (No changes to logic) ---
   const requestStoragePermission = async (): Promise<boolean> => {
-    // Permissions are generally not needed for web or might be handled differently
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert(
           'Permission Denied',
-          'Sorry, we need camera roll permissions to make this work!'
+          'We need access to your photos to let you share them!'
         );
         return false;
       }
@@ -68,290 +69,317 @@ const PostScreen: React.FC = () => {
     return true;
   };
 
-  // --- 3. Image Selection Logic ---
+  // --- 3. Image Selection Logic (No changes to logic) ---
   const selectImage = async () => {
     const hasPermission = await requestStoragePermission();
     if (!hasPermission) return;
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true, // Allow user to crop/edit the image
-        aspect: [4, 3], // Example aspect ratio
-        quality: 0.7, // Compress image quality to save bandwidth (0 to 1)
+        mediaTypes: 'images',
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8, // Slightly higher quality
       });
 
       if (!result.canceled && result.assets.length > 0) {
         const asset = result.assets[0];
-        // Ensure a valid file name; Expo's asset.fileName is usually good
-        const fileName = asset.fileName || `${Date.now()}.${asset.type === 'image' ? 'jpeg' : 'file'}`;
-
+        const fileName = asset.fileName || `${Date.now()}.jpeg`;
         setImage({
           uri: asset.uri,
           name: fileName,
-          type: asset.mimeType || 'image/jpeg', // Use mimeType if available, fallback to 'image/jpeg'
+          type: asset.mimeType || 'image/jpeg',
         });
-        console.log('✅ Image selected:', { uri: asset.uri, name: fileName, type: asset.mimeType });
-      } else {
-        console.log('ℹ️ Image selection cancelled.');
       }
     } catch (error) {
-      console.error('❌ Error selecting image:', error);
-      Alert.alert('Error', 'Could not select image. Please try again.');
+      Alert.alert('Error', 'Could not select the image. Please try again.');
     }
   };
 
-  // --- 4. Post Submission Logic ---
+  // --- 4. Post Submission Logic (Updated for better UX) ---
   const handlePost = async () => {
-    if (loading) return; // Prevent multiple submissions while a request is in progress
+    if (isUploading) return;
 
-    // Basic validation for caption and image presence
     if (!caption.trim() && !image) {
-      Alert.alert('Validation Error', 'Please enter a caption or select an image to post.');
+      Alert.alert('Empty Post', 'Please write a caption or select an image.');
       return;
     }
 
-    // --- Critical Token Check ---
     if (!token) {
-      console.error('❌ Attempted to post without a loaded token.');
-      Alert.alert('Authentication Required', 'Your session has not loaded. Please log in again or restart the app.');
+      Alert.alert(
+        'Authentication Required',
+        'Your session has expired or is invalid. Please log in again.'
+      );
       return;
     }
-    console.log('Sending post request with token (first 30 chars):', token.substring(0, 30) + '...');
 
-
-    setLoading(true); // Start loading indicator
+    setIsUploading(true); // Show the full-screen loading modal
 
     const formData = new FormData();
-    formData.append('caption', caption.trim()); // Trim whitespace from caption
-    formData.append('token', token); // Append the raw JWT string
+    formData.append('caption', caption.trim());
+    formData.append('token', token);
 
     if (image) {
-      // Structure the image object as expected by FormData
       formData.append('image', {
         uri: image.uri,
         name: image.name,
         type: image.type,
-      } as any); // 'as any' is used to satisfy TypeScript for appending Blob/File-like objects
+      } as any);
     }
-
-    // Log FormData contents for debugging purposes (React Native FormData does not support entries())
-    console.log('📦 Sending FormData (fields only):');
-    console.log(`  caption: ${caption.trim().substring(0, 50)}...`);
-    console.log(`  token: ${token.substring(0, 30)}...`);
-    if (image) {
-      console.log(`  image: { uri: ${image.uri}, name: ${image.name}, type: ${image.type} }`);
-    }
-
 
     try {
-      console.log(`📡 Sending POST request to: ${BASE_URL}/api/post/create`);
-      const res = await axios.post(`${BASE_URL}/api/post/create`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data', // Crucial header for file uploads
-        },
-        timeout: 20000, // 20 seconds timeout for potentially large uploads
+      await axios.post(`${BASE_URL}/api/post/create`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 30000, // 30-second timeout for larger uploads
       });
 
-      console.log('✅ Post creation successful:', res.data);
-      Alert.alert('Success', 'Your post has been uploaded!');
-      // Clear inputs after successful post
+      Alert.alert('Success!', 'Your post has been shared.');
       setCaption('');
       setImage(null);
     } catch (error: any) {
-      console.error('❌ Error during post creation:', error);
-
       let errorMessage = 'An unexpected error occurred. Please try again.';
-
       if (axios.isAxiosError(error)) {
         if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx (e.g., 401, 500)
-          console.error('Server Response Status:', error.response.status);
-          console.error('Server Response Data:', error.response.data);
-
-          if (error.response.status === 401) {
-            errorMessage = error.response.data.message || 'Invalid or expired session. Please log in again.';
-            // Consider navigating to login screen here
-          } else if (error.response.status === 500) {
-            errorMessage = error.response.data.error || 'Server error. Please try again later.';
-          } else {
-            // Catch other client-side errors like 400 Bad Request if backend sends them
-            errorMessage = error.response.data.message || error.response.data.error || `Server responded with status ${error.response.status}.`;
-          }
+          errorMessage =
+            error.response.data.message ||
+            `Server Error: ${error.response.status}`;
         } else if (error.request) {
-          // The request was made but no response was received (e.g., network error, server down)
-          errorMessage = 'No response from server. Please check your internet connection or try again later.';
-          console.error('No response from server:', error.request);
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          errorMessage = error.message;
-          console.error('Axios request setup error:', error.message);
+          errorMessage =
+            'Network error. Please check your connection and try again.';
         }
-      } else {
-        // Non-Axios errors (e.g., programming errors in the frontend code)
-        errorMessage = error.message || 'An unknown error occurred.';
       }
-      Alert.alert('Post Failed', errorMessage);
+      Alert.alert('Upload Failed', errorMessage);
     } finally {
-      setLoading(false); // Always stop loading, regardless of success or failure
+      setIsUploading(false); // Hide the loading modal
     }
   };
 
   return (
-    <View style={styles.container}>
-      {/* Profile Section */}
-      <View style={styles.profileContainer}>
-        <Image
-          source={{ uri: 'https://i.pravatar.cc/100' }} // Placeholder for user avatar
-          style={styles.avatar}
-        />
-        <View style={styles.profileInfo}>
-          <Text style={styles.name}>Mohammed Tharik</Text> {/* Placeholder user name */}
-          <Text style={styles.role}>Student @ AVC</Text> {/* Placeholder user role */}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.container}>
+          {/* --- Uploading Modal --- */}
+          <Modal visible={isUploading} transparent={true} animationType="fade">
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <ActivityIndicator size="large" color="#FFFFFF" />
+                <Text style={styles.modalText}>Uploading...</Text>
+              </View>
+            </View>
+          </Modal>
+
+          {/* --- Header --- */}
+          <Animated.View entering={FadeInUp.duration(500)} style={styles.headerContainer}>
+            <View style={styles.profileContainer}>
+              <Image
+                source={{ uri: 'https://i.pravatar.cc/100' }}
+                style={styles.avatar}
+              />
+              <View>
+                <Text style={styles.name}>Mohammed Tharik</Text>
+                <Text style={styles.role}>Student @ AVC</Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              style={[styles.postButton, (isUploading || (!caption.trim() && !image)) && styles.postButtonDisabled]}
+              onPress={handlePost}
+              disabled={isUploading || (!caption.trim() && !image)}
+            >
+              <Text style={styles.postText}>POST</Text>
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* --- Main Content Card --- */}
+          <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.mainCard}>
+            <TextInput
+              placeholder="What's on your mind?"
+              placeholderTextColor="#999"
+              style={styles.input}
+              value={caption}
+              onChangeText={setCaption}
+              multiline
+              maxLength={MAX_CAPTION_LENGTH}
+            />
+            
+            {/* --- Image Preview --- */}
+            {image && (
+              <Animated.View
+                layout={Layout.springify()}
+                entering={FadeIn.duration(400)}
+                style={styles.imagePreviewContainer}
+              >
+                <Image source={{ uri: image.uri }} style={styles.preview} />
+                <TouchableOpacity
+                  style={styles.removeImageButton}
+                  onPress={() => setImage(null)}
+                >
+                  <Text style={styles.removeImageText}>✕</Text>
+                </TouchableOpacity>
+              </Animated.View>
+            )}
+
+            {/* --- Card Footer with Actions --- */}
+            <View style={styles.cardFooter}>
+               <TouchableOpacity style={styles.iconButton} onPress={selectImage}>
+                  <Image source={require('./assets/image.png')} style={styles.footerIcon} />
+               </TouchableOpacity>
+              <Text style={styles.charCounter}>
+                {caption.length} / {MAX_CAPTION_LENGTH}
+              </Text>
+            </View>
+          </Animated.View>
         </View>
-        <TouchableOpacity
-          style={styles.postButton}
-          onPress={handlePost}
-          disabled={loading} // Disable button while request is in progress
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" /> // Show loader when loading
-          ) : (
-            <Text style={styles.postText}>POST</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      {/* Caption Input */}
-      <TextInput
-        placeholder="| Share your thoughts...."
-        placeholderTextColor="#888"
-        style={styles.input}
-        value={caption}
-        onChangeText={setCaption}
-        multiline
-        maxLength={500} // Example max length for caption
-      />
-
-      {/* Image Preview */}
-      {image && (
-        <View style={styles.imagePreviewContainer}>
-          <Image source={{ uri: image.uri }} style={styles.preview} />
-          <TouchableOpacity style={styles.removeImageButton} onPress={() => setImage(null)}>
-            <Text style={styles.removeImageText}>X</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Upload Image Icon */}
-      <TouchableOpacity style={styles.uploadIcon} onPress={selectImage}>
-        {/* Make sure 'image.png' is correctly located in your assets folder */}
-        <Image
-          source={require('./assets/image.png')}
-          style={{ width: 40, height: 40 }}
-        />
-      </TouchableOpacity>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 export default PostScreen;
 
+// --- Styles ---
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
   container: {
     flex: 1,
-    padding: 15,
-    paddingVertical: 35, // Added padding at top for status bar
-    backgroundColor: '#f4f4f4',
+    padding: 20,
+    backgroundColor: '#F0F2F5', // Softer background color
+  },
+  // --- Header ---
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingTop: Platform.OS === 'android' ? 25 : 0,
   },
   profileContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  profileInfo: {
-    marginLeft: 10,
-    flex: 1, // Allows info to take up available space
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 12,
   },
   name: {
     fontWeight: 'bold',
-    fontSize: 16,
-    color: '#333',
+    fontSize: 18,
+    color: '#1C1E21',
   },
   role: {
-    fontSize: 12,
-    color: 'gray',
+    fontSize: 14,
+    color: '#65676B',
   },
   postButton: {
-    backgroundColor: '#5e8df2',
-    borderRadius: 15,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    minWidth: 70, // Ensure button has a consistent width for loader
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#1877F2', // Facebook blue
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+  },
+  postButtonDisabled: {
+    backgroundColor: '#A0C6F5', // Lighter, disabled color
   },
   postText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 16,
+  },
+  // --- Main Content Card ---
+  mainCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   input: {
-    minHeight: 100,
-    maxHeight: 200, // Prevent input from growing too large
-    padding: 12,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    textAlignVertical: 'top', // Aligns text to the top for multiline input
-    marginTop: 10,
-    fontSize: 16,
-    lineHeight: 24, // Improve readability
-    color: '#333',
+    minHeight: 120,
+    textAlignVertical: 'top',
+    fontSize: 18,
+    color: '#1C1E21',
+    lineHeight: 26,
   },
+  // --- Image Preview ---
   imagePreviewContainer: {
-    marginTop: 10,
-    position: 'relative', // For positioning the remove button
+    marginTop: 15,
+    position: 'relative',
   },
   preview: {
     width: '100%',
-    height: 200,
-    borderRadius: 10,
-    resizeMode: 'cover', // Ensures image covers the area nicely
+    height: 250,
+    borderRadius: 12,
   },
   removeImageButton: {
     position: 'absolute',
-    top: 5,
-    right: 5,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: 15,
-    width: 30,
-    height: 30,
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 16,
+    width: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1, // Ensure it's above the image
+    zIndex: 1,
   },
   removeImageText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },
-  uploadIcon: {
-    position: 'absolute',
-    bottom: 80, // Adjust position as needed
-    right: 20,
-    zIndex: 999,
-    backgroundColor: '#fff', // Add a background to make icon stand out
-    borderRadius: 25, // Make it circular
-    padding: 5, // Add some padding
-    shadowColor: '#000', // Add shadow for better visibility
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5, // Android shadow
+  // --- Card Footer ---
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#EBEEF0',
+    marginTop: 15,
+  },
+  iconButton: {
+    padding: 8,
+  },
+  footerIcon: {
+    width: 30,
+    height: 30,
+    opacity: 0.7,
+  },
+  charCounter: {
+    fontSize: 14,
+    color: '#65676B',
+  },
+  // --- Uploading Modal ---
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalText: {
+    marginTop: 15,
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });

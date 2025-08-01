@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,20 +9,29 @@ import {
   Dimensions,
   Alert,
   ActivityIndicator,
+  ScrollView,
+  Pressable,
+  RefreshControl,
 } from "react-native";
 import axios, { AxiosError } from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay, FadeInUp } from 'react-native-reanimated';
+
 import { BASE_URL } from "@/constant";
 
 const { width } = Dimensions.get("window");
 
+// --- Interfaces ---
 interface Student {
   name: string;
   reg_no: string;
+  Bio?: string;
   job_role?: string | null;
   Company?: string | null;
   profile_image?: string | null;
+  cover_photo?: string | null;
   Linkedin_id?: string | null;
   Experience?: string | null;
   Gender?: string | null;
@@ -37,57 +46,77 @@ interface ProfileResponse {
 interface Post {
   id: number;
   title: string;
-  color: string;
+  imageUrl: string;
 }
+
+const AnimatedPostItem = ({ item, index }: { item: Post, index: number }) => {
+  const style = useAnimatedStyle(() => {
+    return {
+      opacity: withDelay(index * 100, withTiming(1)),
+      transform: [{ scale: withDelay(index * 100, withTiming(1)) }],
+    };
+  });
+
+  return (
+    <Animated.View style={[styles.postBox, { transform: [{ scale: 0 }] }, style]}>
+      <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+    </Animated.View>
+  );
+};
+
 
 const ProfileScreen = () => {
   const router = useRouter();
   const { reg_no } = useLocalSearchParams<{ reg_no?: string }>();
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'posts' | 'about'>('posts');
+  const [refreshing, setRefreshing] = useState(false);
 
-  const getProfileData = async (registrationNumber: string) => {
-    setLoading(true);
+  const profileCardAnimation = useSharedValue(0);
+
+  const profileCardStyle = useAnimatedStyle(() => {
+    return {
+      opacity: profileCardAnimation.value,
+      transform: [{ translateY: withTiming(60 * (1 - profileCardAnimation.value)) }],
+    };
+  });
+  
+  const getProfileData = useCallback(async (registrationNumber: string) => {
     try {
       const token = await AsyncStorage.getItem('token');
       const response = await axios.post<ProfileResponse>(
         `${BASE_URL}/api/user/profile/`,
-        {
-         token 
-        }
+        { token, reg_no: registrationNumber }
       );
+
       if (response.data.success) {
-        setStudent(response.data.data);
+        const fetchedStudent = response.data.data;
+        fetchedStudent.Bio = fetchedStudent.Bio || "Passionate Full-Stack Developer | Lifelong Learner | Tech Enthusiast creating solutions for a better tomorrow.";
+        setStudent(fetchedStudent);
+        profileCardAnimation.value = withTiming(1, { duration: 800 });
       } else {
-        Alert.alert("Error", response.data.message || "Could not load profile data", [
-          { text: "Retry", onPress: () => getProfileData(registrationNumber) },
-          { text: "Cancel", style: "cancel" },
-        ]);
+        Alert.alert("Error", response.data.message || "Could not load profile data");
       }
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string }>;
       console.error('Profile fetch error:', axiosError);
-      Alert.alert(
-        "Error",
-        axiosError.response?.data?.message || "Failed to connect to server",
-        [
-          { text: "Retry", onPress: () => getProfileData(registrationNumber) },
-          { text: "Cancel", style: "cancel" },
-        ]
-      );
+      Alert.alert("Error", axiosError.response?.data?.message || "Failed to connect to the server.");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+  }, [profileCardAnimation]);
 
   useEffect(() => {
     const fetchRegNoAndProfile = async () => {
-      let registrationNumber: string | null | undefined;
+      setLoading(true);
+      let registrationNumber: string | undefined | null;
       if (!reg_no || reg_no === "undefined") {
         registrationNumber = await AsyncStorage.getItem('reg_no');
       } else {
         registrationNumber = reg_no;
       }
+
       if (registrationNumber) {
         getProfileData(registrationNumber);
       } else {
@@ -96,129 +125,293 @@ const ProfileScreen = () => {
       }
     };
     fetchRegNoAndProfile();
-  }, [reg_no]);
+  }, [reg_no, getProfileData]);
 
-  const posts: Post[] = [
-    { id: 1, title: "post 1", color: "#64A34D" },
-    { id: 2, title: "post 2", color: "#693F3F" },
-    { id: 3, title: "post 3", color: "#64A34D" },
-    { id: 4, title: "post 4", color: "#64A34D" },
-    { id: 5, title: "post 5", color: "#693F3F" },
-    { id: 6, title: "post 6", color: "#693F3F" },
-  ];
+  const onRefresh = useCallback(() => {
+    if (student?.reg_no) {
+      setRefreshing(true);
+      getProfileData(student.reg_no).finally(() => setRefreshing(false));
+    }
+  }, [student, getProfileData]);
+  
+  const posts: Post[] = Array.from({ length: 12 }, (_, i) => ({
+    id: i + 1,
+    title: `Post ${i + 1}`,
+    imageUrl: `https://picsum.photos/seed/${(student?.reg_no || 'post') + i}/300/300`,
+  }));
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#297BE6" style={{ marginTop: 100 }} />
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#007bff" />
       </View>
     );
   }
 
-  if (!student) return null;
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Image
-          source={require("@/assets/avc app logo.png")}
-          style={styles.logo}
-          accessibilityLabel="Alumni Connect logo"
-        />
-        <Text style={styles.appTitle}>
-          Alumni{"\n"}
-          <Text style={styles.connectText}>Connect</Text>
-        </Text>
+  if (!student) {
+    return (
+      <View style={styles.centered}>
+        <Text>Could not load profile. Pull down to try again.</Text>
       </View>
-      <View style={styles.profileCard}>
+    );
+  }
+
+  // --- FIXED: Construct full image URLs by prepending BASE_URL if the path is relative ---
+  const fullProfileImageUrl = student.profile_image?.startsWith('/')
+    ? `${BASE_URL}${student.profile_image}`
+    : student.profile_image;
+
+  const fullCoverPhotoUrl = student.cover_photo?.startsWith('/')
+    ? `${BASE_URL}${student.cover_photo}`
+    : student.cover_photo;
+
+  const renderProfileHeader = () => (
+    <Animated.View style={[styles.profileCard, profileCardStyle]}>
         <Image
-          source={{ uri: student.profile_image ?? "https://via.placeholder.com/120" }}
-          style={styles.profileImage}
-          accessibilityLabel={`${student.name}'s profile picture`}
+            source={{ uri: fullCoverPhotoUrl ?? `https://picsum.photos/seed/${student.reg_no}/800/400` }}
+            style={styles.coverImage}
+        />
+        <Image
+            source={{ uri: fullProfileImageUrl ?? "https://via.placeholder.com/150" }}
+            style={styles.profileImage}
         />
         <Text style={styles.name}>{student.name}</Text>
-        <Text style={styles.regNo}>Reg No: {student.reg_no}</Text>
-        <Text style={styles.detail}>
-          {student.job_role ?? 'No role specified'} @ {student.Company ?? 'No company'}
-        </Text>
-        <Text style={styles.detail}>Gender: {student.Gender ?? 'Not specified'}</Text>
-        <Text style={styles.detail}>LinkedIn: {student.Linkedin_id ?? 'Not provided'}</Text>
-        <Text style={styles.detail}>Experience: {student.Experience ?? 'Not available'}</Text>
-        <TouchableOpacity
-          style={styles.enhanceButton}
-          onPress={() => router.push({ pathname: "/profileupdate", params: { reg_no: reg_no ?? student.reg_no } })}
-          accessibilityLabel="Enhance your profile"
+        <Text style={styles.regNo}>@{student.reg_no}</Text>
+        <Text style={styles.bio}>{student.Bio}</Text>
+    </Animated.View>
+  );
+
+  const renderStatsAndActions = () => (
+    <View style={styles.statsContainer}>
+        <View style={styles.statBox}>
+            <Text style={styles.statNumber}>{posts.length}</Text>
+            <Text style={styles.statLabel}>Posts</Text>
+        </View>
+        <View style={styles.statBox}>
+            <Text style={styles.statNumber}>{student.Experience || 'N/A'}</Text>
+            <Text style={styles.statLabel}>Experience</Text>
+        </View>
+        <TouchableOpacity 
+            style={styles.enhanceButton}
+            onPress={() => router.push({ pathname: "/profileupdate", params: { reg_no: reg_no ?? student.reg_no } })}
         >
-          <Text style={styles.enhanceButtonText}>Enhance Profile</Text>
+            <FontAwesome name="pencil" size={16} color="#fff" />
+            <Text style={styles.enhanceButtonText}>Edit Profile</Text>
         </TouchableOpacity>
-      </View>
-      <View style={styles.postsSection}>
-        <Text style={styles.sectionTitle}>Recent Posts</Text>
-        <FlatList
-          data={posts}
-          keyExtractor={(item) => item.id.toString()}
-          numColumns={3}
-          renderItem={({ item }) => (
-            <View style={[styles.postBox, { backgroundColor: item.color }]}>
-              <Text style={styles.postText}>{item.title}</Text>
-            </View>
-          )}
-          contentContainerStyle={styles.postGrid}
-        />
-      </View>
     </View>
+  );
+  
+  const renderTabBar = () => (
+    <View style={styles.tabBar}>
+      <Pressable style={[styles.tab, activeTab === 'posts' && styles.activeTab]} onPress={() => setActiveTab('posts')}>
+        <MaterialCommunityIcons name="grid" size={24} color={activeTab === 'posts' ? "#007bff" : "#666"} />
+      </Pressable>
+      <Pressable style={[styles.tab, activeTab === 'about' && styles.activeTab]} onPress={() => setActiveTab('about')}>
+        <MaterialCommunityIcons name="information-outline" size={24} color={activeTab === 'about' ? "#007bff" : "#666"} />
+      </Pressable>
+    </View>
+  );
+
+  const renderContent = () => {
+    if (activeTab === 'posts') {
+      return (
+         <FlatList
+            data={posts}
+            keyExtractor={(item) => item.id.toString()}
+            numColumns={3}
+            renderItem={({ item, index }) => <AnimatedPostItem item={item} index={index} />}
+            contentContainerStyle={styles.postGrid}
+            scrollEnabled={false}
+          />
+      );
+    }
+    return (
+        <Animated.View style={styles.aboutContainer} entering={FadeInUp.duration(500)}>
+            <View style={styles.detailItem}>
+                <MaterialCommunityIcons name="briefcase-outline" size={24} color="#333" />
+                <Text style={styles.detailText}>{student.job_role || 'No role specified'} @ {student.Company || 'No company'}</Text>
+            </View>
+            <View style={styles.detailItem}>
+                <FontAwesome name="linkedin-square" size={24} color="#0077b5" />
+                <Text style={styles.detailText}>{student.Linkedin_id || 'Not provided'}</Text>
+            </View>
+            <View style={styles.detailItem}>
+                <MaterialCommunityIcons name="gender-male-female" size={24} color="#333" />
+                <Text style={styles.detailText}>{student.Gender || 'Not specified'}</Text>
+            </View>
+        </Animated.View>
+    );
+  };
+
+  return (
+    <ScrollView 
+        style={styles.container} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+            <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[theme.colors.primary]}
+                tintColor={theme.colors.primary}
+            />
+        }
+    >
+      {renderProfileHeader()}
+      {renderStatsAndActions()}
+      {renderTabBar()}
+      {renderContent()}
+    </ScrollView>
   );
 };
 
+const theme = {
+    colors: {
+        primary: '#007bff',
+        background: '#F0F2F5',
+        card: '#FFFFFF',
+        text: '#1C1E21',
+        subtext: '#65676B',
+        border: '#CED0D4',
+        white: '#FFFFFF',
+    },
+    spacing: {
+        sm: 8,
+        md: 16,
+        lg: 24,
+    },
+};
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f5f5", padding: 10 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 15,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
   },
-  logo: { width: 40, height: 40, marginRight: 10 },
-  appTitle: { fontSize: 18, fontWeight: "bold", color: "#014CAB" },
-  connectText: { color: "#007bff" },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.colors.background,
+  },
   profileCard: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 15,
-    marginVertical: 10,
+    backgroundColor: theme.colors.card,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    paddingBottom: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+    elevation: 2,
   },
-  profileImage: { width: 120, height: 120, borderRadius: 60, marginBottom: 10 },
-  name: { fontSize: 24, fontWeight: "bold", color: "#333" },
-  regNo: { fontSize: 16, color: "#666", marginBottom: 5 },
-  detail: { fontSize: 16, color: "#666", marginBottom: 5 },
+  coverImage: {
+    width: '100%',
+    height: 150,
+  },
+  profileImage: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    borderWidth: 4,
+    borderColor: theme.colors.card,
+    marginTop: -70,
+    marginBottom: theme.spacing.sm,
+    backgroundColor: '#E0E0E0',
+  },
+  name: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: theme.colors.text,
+  },
+  regNo: {
+    fontSize: 16,
+    color: theme.colors.subtext,
+  },
+  bio: {
+    fontSize: 15,
+    color: theme.colors.subtext,
+    textAlign: 'center',
+    paddingHorizontal: theme.spacing.lg,
+    marginTop: theme.spacing.sm,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    backgroundColor: theme.colors.card,
+    marginHorizontal: theme.spacing.md,
+    borderRadius: 12,
+    elevation: 2,
+  },
+  statBox: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: theme.colors.subtext,
+  },
   enhanceButton: {
-    marginTop: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    backgroundColor: "#007bff",
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    backgroundColor: theme.colors.primary,
   },
-  enhanceButtonText: { color: "#fff", fontWeight: "bold", textAlign: "center" },
-  postsSection: { marginTop: 20 },
-  sectionTitle: { fontSize: 20, fontWeight: "bold", color: "#333", marginBottom: 10, paddingHorizontal: 10 },
-  postGrid: { paddingHorizontal: 5 },
+  enhanceButtonText: {
+    color: theme.colors.white,
+    fontWeight: "bold",
+  },
+  tabBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: theme.spacing.md,
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: theme.colors.primary,
+  },
+  postGrid: {
+    padding: 2,
+  },
   postBox: {
-    width: (width - 40) / 3,
-    height: 100,
-    margin: 5,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
+    width: (width - 8) / 3,
+    height: (width - 8) / 3,
+    margin: 1,
+    backgroundColor: '#e0e0e0',
   },
-  postText: { color: "#fff", fontWeight: "bold" },
+  postImage: {
+    width: '100%',
+    height: '100%',
+  },
+  aboutContainer: {
+    padding: theme.spacing.md,
+    margin: theme.spacing.md,
+    backgroundColor: theme.colors.card,
+    borderRadius: 12,
+    elevation: 2,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.md,
+    gap: theme.spacing.md,
+  },
+  detailText: {
+    fontSize: 16,
+    color: theme.colors.text,
+    flexShrink: 1,
+  }
 });
 
 export default ProfileScreen;
