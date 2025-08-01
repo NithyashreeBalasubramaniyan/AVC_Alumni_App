@@ -1,7 +1,12 @@
-import { Tabs } from "expo-router";
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { withLayoutContext } from 'expo-router';
 import { Entypo, FontAwesome } from '@expo/vector-icons';
-import { View, BackHandler, ToastAndroid } from 'react-native';
-import { useEffect, useRef } from 'react';
+import { BackHandler, ToastAndroid, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { COLORS } from '../constants/theme';
+
+const Tab = createMaterialTopTabNavigator();
+const Tabs = withLayoutContext(Tab.Navigator);
 
 export default function TabsLayout() {
   const backPressedOnce = useRef(false);
@@ -9,14 +14,13 @@ export default function TabsLayout() {
   useEffect(() => {
     const backAction = () => {
       if (backPressedOnce.current) {
-        BackHandler.exitApp(); // Exit app
+        BackHandler.exitApp();
         return true;
       }
 
       backPressedOnce.current = true;
       ToastAndroid.show('Press back again to exit', ToastAndroid.SHORT);
 
-      // Reset after 2 seconds
       setTimeout(() => {
         backPressedOnce.current = false;
       }, 2000);
@@ -25,38 +29,28 @@ export default function TabsLayout() {
     };
 
     const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-
-    return () => backHandler.remove(); // Cleanup
+    return () => backHandler.remove();
   }, []);
 
   return (
     <Tabs
+      initialRouteName="index"
+      tabBarPosition="bottom"
       screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: '#377AFF',
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          height: 65,
-          position: 'absolute',
-        },
-        tabBarActiveTintColor: '#fff',
-        tabBarInactiveTintColor: '#80aaffff',
-        tabBarLabelStyle: {
-          fontSize: 12,
-          marginBottom: 6,
-        },
-        tabBarIconStyle: {
-          marginTop: 6,
-        },
+        swipeEnabled: true,
+        tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabBarLabel,
+        tabBarActiveTintColor: COLORS.white,
+        tabBarInactiveTintColor: COLORS.inactive,
+        tabBarShowIcon: true,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => (
-            <Entypo name="home" size={24} color={color} />
+          tabBarIcon: ({ color }: { color: string }) => (
+            <Entypo name="home" size={26} color={color} />
           ),
         }}
       />
@@ -64,21 +58,35 @@ export default function TabsLayout() {
         name="upload"
         options={{
           title: "Upload",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome name="plus" size={24} color={color} />
+          tabBarIcon: ({ color }: { color: string }) => (
+            <FontAwesome name="plus" size={26} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="(profilegrp)"
+        name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome name="user" size={24} color={color} />
+          tabBarIcon: ({ color }: { color: string }) => (
+            <FontAwesome name="user" size={26} color={color} />
           ),
         }}
       />
-       
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: COLORS.primary,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    height: 70,
+    borderTopWidth: 0,
+    paddingBottom: 5,
+  },
+  tabBarLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+});

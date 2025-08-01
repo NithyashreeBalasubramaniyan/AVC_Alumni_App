@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 import { BASE_URL } from "@/constant";
+import { router } from "expo-router";
 
 const { height: screenHeight } = Dimensions.get("window");
 
@@ -115,6 +116,8 @@ export default function UpdateProfile() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 20}
       >
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        
+
           <Image
             source={require("./alumni.png")}
             style={styles.avatar}

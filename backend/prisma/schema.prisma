@@ -66,6 +66,8 @@ model Student {
   Gender        String?
   Company       String?
   profile_image String?
+  Bio           String?
+  allpost       String?
   is_verified   Boolean  @default(false)
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
