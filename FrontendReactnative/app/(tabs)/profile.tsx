@@ -40,7 +40,7 @@ interface Post {
   color: string;
 }
 
-const ProfileScreen = () => {
+export default function ProfileScreen  () {
   const router = useRouter();
   const { reg_no } = useLocalSearchParams<{ reg_no?: string }>();
   const [student, setStudent] = useState<Student | null>(null);
@@ -221,4 +221,4 @@ const styles = StyleSheet.create({
   postText: { color: "#fff", fontWeight: "bold" },
 });
 
-export default ProfileScreen;
+ 

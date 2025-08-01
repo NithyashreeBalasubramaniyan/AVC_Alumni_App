@@ -70,16 +70,7 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="profileupdate"
-        options={{
-          title: "Profileupdate",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome name="user" size={24} color={color} />
-          ),
-        }}
-      />
-       <Tabs.Screen
-        name="profile"
+        name="(profilegrp)"
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
@@ -87,6 +78,7 @@ export default function TabsLayout() {
           ),
         }}
       />
+       
     </Tabs>
   );
 }
