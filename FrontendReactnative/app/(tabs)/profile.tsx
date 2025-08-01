@@ -24,6 +24,12 @@ import { BASE_URL } from "@/constant";
 const { width } = Dimensions.get("window");
 
 // --- Interfaces ---
+interface Post {
+  id: number;
+  caption: string | null;
+  image: string | null;
+}
+
 interface Student {
   name: string;
   reg_no: string;
@@ -35,18 +41,13 @@ interface Student {
   Linkedin_id?: string | null;
   Experience?: string | null;
   Gender?: string | null;
+  Post: Post[]; // Posts are now part of the student data
 }
 
 interface ProfileResponse {
   success: boolean;
   data: Student;
   message?: string;
-}
-
-interface Post {
-  id: number;
-  title: string;
-  imageUrl: string;
 }
 
 const AnimatedPostItem = ({ item, index }: { item: Post, index: number }) => {
@@ -57,9 +58,24 @@ const AnimatedPostItem = ({ item, index }: { item: Post, index: number }) => {
     };
   });
 
+  // Conditionally render based on whether a post image exists
   return (
     <Animated.View style={[styles.postBox, { transform: [{ scale: 0 }] }, style]}>
-      <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+      {item.image ? (
+        // If image exists, show it
+        <Image
+          source={{ uri: `${BASE_URL}${item.image}` }}
+          style={styles.postImage}
+        />
+      ) : (
+        // If no image, show caption in a styled view
+        <View style={styles.captionPostBox}>
+            <MaterialCommunityIcons name="format-quote-close" size={24} color="#A9A9A9" style={styles.captionIcon} />
+            <Text style={styles.captionText} numberOfLines={4}>
+                {item.caption}
+            </Text>
+        </View>
+      )}
     </Animated.View>
   );
 };
@@ -91,7 +107,6 @@ const ProfileScreen = () => {
       );
 
       if (response.data.success) {
-        console.log(response.data.data)
         const fetchedStudent = response.data.data;
         fetchedStudent.Bio = fetchedStudent.Bio || "Passionate Full-Stack Developer | Lifelong Learner | Tech Enthusiast creating solutions for a better tomorrow.";
         setStudent(fetchedStudent);
@@ -135,12 +150,6 @@ const ProfileScreen = () => {
     }
   }, [student, getProfileData]);
   
-  const posts: Post[] = Array.from({ length: 12 }, (_, i) => ({
-    id: i + 1,
-    title: `Post ${i + 1}`,
-    imageUrl: `https://picsum.photos/seed/${(student?.reg_no || 'post') + i}/300/300`,
-  }));
-
   if (loading) {
     return (
       <View style={styles.centered}>
@@ -157,7 +166,6 @@ const ProfileScreen = () => {
     );
   }
 
-  // --- FIXED: Construct full image URLs by prepending BASE_URL if the path is relative ---
   const fullProfileImageUrl = student.profile_image?.startsWith('/')
     ? `${BASE_URL}${student.profile_image}`
     : student.profile_image;
@@ -185,7 +193,7 @@ const ProfileScreen = () => {
   const renderStatsAndActions = () => (
     <View style={styles.statsContainer}>
         <View style={styles.statBox}>
-            <Text style={styles.statNumber}>{posts.length}</Text>
+            <Text style={styles.statNumber}>{student.Post?.length ?? 0}</Text>
             <Text style={styles.statLabel}>Posts</Text>
         </View>
         <View style={styles.statBox}>
@@ -194,7 +202,7 @@ const ProfileScreen = () => {
         </View>
         <TouchableOpacity 
             style={styles.enhanceButton}
-            onPress={() => router.push({ pathname: "/profileupdate", params: { reg_no: reg_no ?? student.reg_no } })}
+            onPress={() => router.push({ pathname: "../profileupdate", params: { reg_no: reg_no ?? student.reg_no } })}
         >
             <FontAwesome name="pencil" size={16} color="#fff" />
             <Text style={styles.enhanceButtonText}>Edit Profile</Text>
@@ -216,8 +224,8 @@ const ProfileScreen = () => {
   const renderContent = () => {
     if (activeTab === 'posts') {
       return (
-         <FlatList
-            data={posts}
+          <FlatList
+            data={student.Post}
             keyExtractor={(item) => item.id.toString()}
             numColumns={3}
             renderItem={({ item, index }) => <AnimatedPostItem item={item} index={index} />}
@@ -412,7 +420,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.colors.text,
     flexShrink: 1,
-  }
+  },
+  captionPostBox: {
+    flex: 1,
+    backgroundColor: '#E9E9E9',
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  captionIcon: {
+    marginBottom: 4,
+  },
+  captionText: {
+    fontSize: 12,
+    color: '#555',
+    textAlign: 'center',
+  },
 });
 
 export default ProfileScreen;

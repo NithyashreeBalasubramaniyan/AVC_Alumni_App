@@ -1,7 +1,7 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
-  Text, // Ensure Text is imported
+  Text,
   TextInput,
   Image,
   TouchableOpacity,
@@ -10,14 +10,14 @@ import {
   Platform,
   StyleSheet,
   Dimensions,
-  StatusBar
+  Alert
 } from "react-native";
 import RNPickerSelect from "react-native-picker-select";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
-import { BASE_URL } from "@/constant";
-import { router } from "expo-router";
+import * as ImagePicker from 'expo-image-picker';
+import { BASE_URL } from "@/constant"; // Replace with your actual backend URL
 
 const { height: screenHeight } = Dimensions.get("window");
 
@@ -28,12 +28,9 @@ export default function UpdateProfile() {
   const companyRef = useRef<TextInput>(null);
   const roleRef = useRef<TextInput>(null);
   const techRef = useRef<TextInput>(null);
+  const bioRef = useRef<TextInput>(null); // Ref for Bio
 
-  const [token, setToken] = React.useState('')
-  const [id, setId] = React.useState(null);
-  const [role, setRole] = React.useState(null);
-
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     linkedin: "",
@@ -44,69 +41,125 @@ export default function UpdateProfile() {
     batch: "",
     gender: "",
     id: "",
-    role: ""
+    role: "",
+    bio: "", // Added bio
+    profileImage: null, // To store image URI
   });
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
-    console.log(formData);
-    // Handle submit (e.g., send data to an API)
-    axios.patch(`${BASE_URL}/api/user/update-profile`, formData)
-    alert("Profile Updated!"); // Simple alert for demonstration
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      handleChange("profileImage", result.assets[0].uri);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.id || !formData.role) {
+      console.error("Cannot update profile: User ID or Role is missing.", formData);
+      Alert.alert(
+        "Error",
+        "Could not update profile because essential user information is missing. Please try logging out and logging back in."
+      );
+      return;
+    }
+
+    // Use FormData for multipart request (if image is being uploaded)
+    const payload = new FormData();
+    payload.append('id', formData.id);
+    payload.append('role', formData.role);
+    payload.append('Linkedin_id', formData.linkedin);
+    payload.append('Experience', formData.experience);
+    payload.append('Gender', formData.gender);
+    payload.append('Company', formData.company);
+    payload.append('job_role', formData.jobRole);
+    payload.append('Bio', formData.bio); // Append bio
+
+    // Append image if it has been changed
+    if (formData.profileImage && formData.profileImage.startsWith('file://')) {
+        const uriParts = formData.profileImage.split('.');
+        const fileType = uriParts[uriParts.length - 1];
+        payload.append('profile_image', {
+            uri: formData.profileImage,
+            name: `photo.${fileType}`,
+            type: `image/${fileType}`,
+        });
+    }
+
+
+    console.log("Sending this payload to backend:", payload);
+
+    try {
+        const response = await axios.patch(`${BASE_URL}/api/user/update-profile`, payload, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        console.log("Update successful:", response.data);
+        Alert.alert("Success", "Your profile has been updated successfully!");
+    } catch (error) {
+        const errorMessage = error.response?.data?.message || "An unexpected error occurred.";
+        console.error("Error updating profile:", error.response?.data || error.message);
+        Alert.alert("Update Failed", errorMessage);
+    }
   };
 
   React.useEffect(() => {
-    const loadToken = async () => {
+    const loadProfileData = async () => {
       try {
         const storedToken = await AsyncStorage.getItem('token');
-        setToken(storedToken || 'null');
-
-        if (storedToken) {
-          const response = await axios.post(`${BASE_URL}/api/user/profile`, {
-            token: storedToken });
-            if (response.data.success) {
-              const data = response.data.data;
-
-              setFormData((prev) => ({
-                ...prev,
-                name: data.name || "",
-                linkedin: data.Linkedin_id || "",
-                company: data.Company || "",
-                jobRole: (data.role==='student'?"Student":data.job_role || ""),
-                experience: data.Experience || "",
-                gender: data.Gender || "",
-                // The following fields are not provided by backend:
-                email: data.mail,
-                technologies: prev.technologies,
-                batch: prev.batch,
-                id: data.id,
-                role: data.role
-              }));
-            }
-
-          console.log('✅ Token loaded from AsyncStorage');
-
-        } else {
+        if (!storedToken) {
           console.warn('⚠️ No token found in AsyncStorage. User might not be logged in.');
+          return;
+        }
+
+        const response = await axios.post(`${BASE_URL}/api/user/profile`, { token: storedToken });
+
+        if (response.data.success) {
+          const data = response.data.data;
+          console.log("Fetched profile data:", data);
+
+          setFormData({
+            name: data.name || "",
+            email: data.mail || "",
+            linkedin: data.Linkedin_id || "",
+            company: data.Company || "",
+            jobRole: data.role === 'student' ? "Student" : data.job_role || "",
+            experience: data.Experience || "",
+            gender: data.Gender || "",
+            id: data.id,
+            role: data.role,
+            bio: data.Bio || "",
+            profileImage: data.profile_image ? `${BASE_URL}${data.profile_image}` : null,
+            technologies: "",
+            batch: "",
+          });
+          console.log('✅ Profile data loaded into form');
+        } else {
+            console.error('Profile fetch failed:', response.data.message);
+            Alert.alert("Error", "Failed to load your profile data. Please try again later.");
         }
       } catch (error) {
         if (axios.isAxiosError(error)) {
-          console.error('❌ Axios error:', error.response?.data || error.message);
+          console.error('❌ Axios error fetching profile:', error.response?.data || error.message);
         } else {
-          console.error('❌ Unknown error:', error);
+          console.error('❌ Unknown error fetching profile:', error);
         }
+        Alert.alert("Error", "An error occurred while fetching your profile.");
       }
     };
-    loadToken();
 
+    loadProfileData();
   }, []);
-
-   
-
- 
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -116,12 +169,15 @@ export default function UpdateProfile() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 20}
       >
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        
-
-          <Image
-            source={require("./alumni.png")}
-            style={styles.avatar}
-          />
+          <TouchableOpacity onPress={pickImage}>
+            <Image
+              source={{ uri: formData.profileImage || 'https://placehold.co/100x100/387bff/FFFFFF?text=User' }}
+              style={styles.avatar}
+            />
+          </TouchableOpacity>
+           <TouchableOpacity onPress={pickImage}>
+              <Text style={styles.uploadText}>Upload Picture</Text>
+            </TouchableOpacity>
 
           <TextInput
             ref={nameRef}
@@ -142,10 +198,11 @@ export default function UpdateProfile() {
             autoCapitalize="none"
             returnKeyType="next"
             onSubmitEditing={() => linkedinRef.current?.focus()}
+            editable={false}
           />
           <TextInput
             ref={linkedinRef}
-            placeholder="LinkedIn ID"
+            placeholder="LinkedIn Profile URL"
             value={formData.linkedin}
             onChangeText={(text) => handleChange("linkedin", text)}
             style={styles.input}
@@ -169,15 +226,27 @@ export default function UpdateProfile() {
             onChangeText={(text) => handleChange("jobRole", text)}
             style={styles.input}
             returnKeyType="next"
+            onSubmitEditing={() => bioRef.current?.focus()}
+            editable={formData.role !== 'student'}
+          />
+
+          <TextInput
+            ref={bioRef}
+            placeholder="Bio"
+            value={formData.bio}
+            onChangeText={(text) => handleChange("bio", text)}
+            style={[styles.input, styles.bioInput]}
+            multiline
+            returnKeyType="next"
             onSubmitEditing={() => techRef.current?.focus()}
           />
 
-          {/* Experience Dropdown */}
           <Text style={styles.label}>Experience</Text>
           <View style={styles.pickerWrapper}>
             <RNPickerSelect
-              onValueChange={(v) => handleChange("experience", v)}
-              placeholder={{ label: "Select Experience", value: null, color: '#9EA0A4' }}
+              onValueChange={(value) => handleChange("experience", value)}
+              value={formData.experience}
+              placeholder={{ label: "Select Experience", value: null }}
               items={[
                 { label: "Fresher", value: "Fresher" },
                 { label: "1 year", value: "1 year" },
@@ -192,19 +261,19 @@ export default function UpdateProfile() {
 
           <TextInput
             ref={techRef}
-            placeholder="Technologies Used"
+            placeholder="Technologies Used (e.g., React, Node.js)"
             value={formData.technologies}
             onChangeText={(text) => handleChange("technologies", text)}
             style={styles.input}
             returnKeyType="done"
           />
 
-          {/* Batch Dropdown */}
           <Text style={styles.label}>Batch</Text>
           <View style={styles.pickerWrapper}>
             <RNPickerSelect
-              onValueChange={(v) => handleChange("batch", v)}
-              placeholder={{ label: "Select Batch", value: null, color: '#9EA0A4' }}
+              onValueChange={(value) => handleChange("batch", value)}
+              value={formData.batch}
+              placeholder={{ label: "Select Batch", value: null }}
               items={[
                 { label: "2024", value: "2024" },
                 { label: "2025", value: "2025" },
@@ -217,12 +286,12 @@ export default function UpdateProfile() {
             />
           </View>
 
-          {/* Gender Dropdown */}
           <Text style={styles.label}>Gender</Text>
           <View style={styles.pickerWrapper}>
             <RNPickerSelect
-              onValueChange={(v) => handleChange("gender", v)}
-              placeholder={{ label: "Select Gender", value: null, color: '#9EA0A4' }}
+              onValueChange={(value) => handleChange("gender", value)}
+              value={formData.gender}
+              placeholder={{ label: "Select Gender", value: null }}
               items={[
                 { label: "Male", value: "Male" },
                 { label: "Female", value: "Female" },
@@ -260,20 +329,31 @@ const styles = StyleSheet.create({
   avatar: {
     width: 100,
     height: 100,
-    marginBottom: 20,
     borderRadius: 50,
+    backgroundColor: '#e0e0e0',
+    marginBottom: 8,
+  },
+  uploadText: {
+    color: '#387bff',
+    marginBottom: 20,
+    fontWeight: 'bold',
   },
   input: {
     width: "100%",
     height: 48,
     borderColor: "#ccc",
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: 8,
     paddingHorizontal: 12,
     marginBottom: 12,
     backgroundColor: "white",
     fontSize: 16,
     color: '#333',
+  },
+  bioInput: {
+    height: 100, // Taller for multiline
+    textAlignVertical: 'top', // Align text to the top
+    paddingTop: 12,
   },
   label: {
     alignSelf: "flex-start",
@@ -287,10 +367,9 @@ const styles = StyleSheet.create({
     width: "100%",
     borderColor: "#ccc",
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: 8,
     marginBottom: 12,
     backgroundColor: "white",
-    paddingHorizontal: 8,
     justifyContent: "center",
     height: 48,
   },
@@ -298,13 +377,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
     position: "absolute",
-    right: 10,
-    top: 15,
+    right: 12,
+    top: 14,
   },
   button: {
     backgroundColor: "#387bff",
     paddingVertical: 14,
-    borderRadius: 6,
+    borderRadius: 8,
     marginTop: 20,
     width: "100%",
     shadowColor: "#000",
@@ -327,20 +406,22 @@ const styles = StyleSheet.create({
 const pickerStyles = StyleSheet.create({
   inputIOS: {
     height: 48,
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     color: "#333",
     fontSize: 16,
-    paddingVertical: 10,
   },
   inputAndroid: {
     height: 48,
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     color: "#333",
     fontSize: 16,
-    paddingVertical: 10,
   },
   placeholder: {
     color: '#9EA0A4',
     fontSize: 16,
+  },
+  iconContainer: {
+    top: 14,
+    right: 12,
   },
 });
