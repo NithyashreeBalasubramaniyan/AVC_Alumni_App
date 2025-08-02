@@ -43,7 +43,7 @@ const PostScreen: React.FC = () => {
         const userData = JSON.parse(await AsyncStorage.getItem('userData') || "null")
         setToken(storedToken);
         setUserInfo(userData);
-        console.log(userInfo.profile_image)
+        console.log(userData);
         if (!storedToken) {
           Alert.alert(
             'Authentication Needed',
