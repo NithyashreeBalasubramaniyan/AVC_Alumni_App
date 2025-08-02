@@ -2,7 +2,8 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { withLayoutContext } from 'expo-router';
 import { Entypo, FontAwesome } from '@expo/vector-icons';
 import { BackHandler, ToastAndroid, StyleSheet } from 'react-native';
-import React, { useEffect, useRef } from 'react';
+import React, {  useRef } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../constants/theme';
 
 const Tab = createMaterialTopTabNavigator();
@@ -11,26 +12,32 @@ const Tabs = withLayoutContext(Tab.Navigator);
 export default function TabsLayout() {
   const backPressedOnce = useRef(false);
 
-  useEffect(() => {
-    const backAction = () => {
-      if (backPressedOnce.current) {
-        BackHandler.exitApp();
+  useFocusEffect(
+    React.useCallback(() => {
+      const backAction = () => {
+        if (backPressedOnce.current) {
+          BackHandler.exitApp();
+          return true;
+        }
+
+        backPressedOnce.current = true;
+        ToastAndroid.show('Press back again to exit', ToastAndroid.SHORT);
+
+        setTimeout(() => {
+          backPressedOnce.current = false;
+        }, 2000);
+
         return true;
-      }
+      };
 
-      backPressedOnce.current = true;
-      ToastAndroid.show('Press back again to exit', ToastAndroid.SHORT);
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction
+      );
 
-      setTimeout(() => {
-        backPressedOnce.current = false;
-      }, 2000);
-
-      return true;
-    };
-
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-    return () => backHandler.remove();
-  }, []);
+      return () => backHandler.remove();
+    }, [])
+  );
 
   return (
     <Tabs

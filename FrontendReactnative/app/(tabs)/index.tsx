@@ -19,6 +19,7 @@ import {
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '@/constant';
+import { router } from 'expo-router';
 // @ts-ignore
 // import Icon from 'react-native-vector-icons/Ionicons'; // This dependency is removed to prevent build errors.
 
@@ -114,17 +115,19 @@ const PostCard = ({ post, index }: { post: Post; index: number }) => {
     return (
         <Animated.View style={[styles.card, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
             {/* Card Header */}
-            <View style={styles.userRow}>
+            <TouchableOpacity onPress={() => router.push({ pathname: "../ShowProfile", params: { id: post.id } })}>
+                <View  style={styles.userRow}>
                 <Image
                     source={user.profile_image ? { uri: `${BASE_URL}${user.profile_image}` } : { uri: 'https://placehold.co/45x45/E0E0E0/FFFFFF?text=A' }}
                     style={styles.profileImage}
                 />
-                <View style={styles.userInfo}>
-                    <Text style={styles.userName}>{user.name}</Text>
+                <View  style={styles.userInfo}>
+                    <Text  style={styles.userName}>{user.name}</Text>
                     {user.job_role && <Text style={styles.jobRole}>{user.job_role}</Text>}
                 </View>
                 <Text style={styles.timeAgo}>{formatTimeAgo(post.createdAt)}</Text>
             </View>
+            </TouchableOpacity>
 
             {/* Caption */}
             {post.caption ? <Text style={styles.caption}>{post.caption}</Text> : null}

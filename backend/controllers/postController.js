@@ -66,6 +66,96 @@ const getPost = async (req, res) => {
   }
 };
 
+// Get Posts by ID
+const getPostById = async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  console.log(id)
+  try {
+    const profile = await prisma.post.findUnique({
+      where: {
+        id: id
+      },
+      include: {
+        student: { select: {
+          id: true,
+          name: true,
+          reg_no: true,
+          mail: true,
+          job_role: true,
+          Company: true,
+          profile_image: true,
+          Linkedin_id: true,
+          Experience: true,
+          Gender: true,
+          Bio: true,
+          Post: {
+            select: {
+              id: true,
+              caption: true,
+              image: true,
+              createdAt: true,
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
+        } },
+        alumni: { select: {
+          id: true,
+          name: true,
+          reg_no: true,
+          mail: true,
+          job_role: true,
+          Company: true,
+          profile_image: true,
+          Linkedin_id: true,
+          Experience: true,
+          Gender: true,
+          Bio: true,
+          Post: {
+            select: {
+              id: true,
+              caption: true,
+              image: true,
+              createdAt: true,
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
+        } },
+        teacher: { select: {
+          id: true,
+          name: true,
+          reg_no: true,
+          mail: true,
+          job_role: true,
+          Company: true,
+          profile_image: true,
+          Linkedin_id: true,
+          Experience: true,
+          Gender: true,
+          Bio: true,
+          Post: {
+            select: {
+              id: true,
+              caption: true,
+              image: true,
+              createdAt: true,
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
+        } },
+      }
+    });
+    res.status(200).json({ success: true, message: "profile fetched", data: profile });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // Update Post
 const updatePost = async (req, res) => {
   try {
@@ -212,4 +302,4 @@ const searchPosts = async (req, res) => {
 
 
 
-module.exports = { createPost, getPost, updatePost, deletePost,searchPosts };
+module.exports = { createPost, getPost, updatePost, deletePost,searchPosts,getPostById };

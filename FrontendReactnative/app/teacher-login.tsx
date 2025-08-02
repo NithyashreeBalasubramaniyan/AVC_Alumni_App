@@ -1,172 +1,276 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   Image,
   StyleSheet,
   SafeAreaView,
   Alert,
+  Dimensions,
+  ActivityIndicator,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useRouter } from "expo-router";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay } from 'react-native-reanimated';
+import { Feather } from '@expo/vector-icons';
 import { BASE_URL } from "@/constant";
+
+// Define the response interface
+interface LoginResponse {
+  success: boolean;
+  data: {
+    token: string;
+  };
+  message?: string;
+}
+
+// Get screen dimensions for responsive design
+const { width, height } = Dimensions.get('window');
 
 export default function SignInScreen() {
   const [registerNumber, setRegisterNumber] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter(); 
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  // Animation values using react-native-reanimated
+  const logoTranslateY = useSharedValue(-100);
+  const logoOpacity = useSharedValue(0);
+  const cardTranslateY = useSharedValue(100);
+  const cardOpacity = useSharedValue(0);
+
+  // Animate components on mount
+  useEffect(() => {
+    logoTranslateY.value = withDelay(200, withTiming(0, { duration: 600 }));
+    logoOpacity.value = withDelay(200, withTiming(1, { duration: 600 }));
+    cardTranslateY.value = withDelay(400, withTiming(0, { duration: 600 }));
+    cardOpacity.value = withDelay(400, withTiming(1, { duration: 600 }));
+  }, []);
+
+  // Animated styles
+  const logoAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: logoOpacity.value,
+    transform: [{ translateY: logoTranslateY.value }],
+  }));
+
+  const cardAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: cardOpacity.value,
+    transform: [{ translateY: cardTranslateY.value }],
+  }));
+
 
   const handleLogin = async () => {
-    try {
-      const response = await axios.post(`${BASE_URL}/api/auth/login/teacher`, {
-        reg_no:registerNumber,
-        password:password,
-      });
+    if (!registerNumber || !password) {
+      Alert.alert("Missing Information", "Please enter both register number and password.");
+      return;
+    }
 
+    setLoading(true);
+    try {
+      const response = await axios.post<LoginResponse>(
+        `${BASE_URL}/api/auth/login/teacher`,
+        {
+          reg_no: registerNumber,
+          password: password,
+        }
+      );
       if (response.data.success) {
-        Alert.alert("Login Successful", "Welcome!");
-        router.replace("/"); 
-        Alert.alert("Happy Login", response.data.message || "Invalid credentials");
+        await AsyncStorage.setItem('token', response.data.data.token);
+        Alert.alert("Login Successful", "Welcome back!");
+        router.replace({ pathname: '/profile', params: { reg_no: registerNumber } });
       }
-    } catch (error: any) {
-      console.error(error);
-      Alert.alert("Error", error?.response?.data?.message || "Server error");
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string }>;
+      console.error('Login error:', axiosError.response?.data);
+      Alert.alert(
+        "Login Failed",
+        axiosError.response?.data?.message || "An unexpected server error occurred."
+      );
+    } finally {
+      setLoading(false);
     }
   };
+  
+  // Use dynamically generated styles
+  const styles = createStyles(width, height);
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Logo at the top */}
-      <View style={styles.logoContainer}>
-        <Image source={require("../assets/avc app logo.png")} style={styles.logo} />
-        <Text style={styles.logoText}>
-          Alumni{"\n"}
-          <Text style={styles.connectText}>Connect</Text>
-        </Text>
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView 
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.container}
+        >
+          <Animated.View style={[styles.logoContainer, logoAnimatedStyle]}>
+            <Image source={require("../assets/avc app logo.png")} style={styles.logo} />
+            <Text style={styles.logoText}>
+              Alumni <Text style={styles.connectText}>Connect</Text>
+            </Text>
+          </Animated.View>
 
-      {/* Login Card */}
-      <View style={styles.card}>
-        <Image
-          source={require("../assets/Teacher.png")}
-          style={styles.avatar}
-        />
-        <Text style={styles.loginText}>Login</Text>
+          <Animated.View style={[styles.card, cardAnimatedStyle]}>
+            <Image source={require("../assets/Teacher.png")} style={styles.avatar} />
+            <Text style={styles.loginText}>Teacher Login</Text>
+            
+            <View style={styles.inputContainer}>
+              <Feather name="user" size={width * 0.05} color="#999" style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Enter register number"
+                placeholderTextColor="#999"
+                value={registerNumber}
+                keyboardType="numeric"
+                onChangeText={setRegisterNumber}
+              />
+            </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Enter register number"
-          placeholderTextColor="#999"
-          value={registerNumber}
-          onChangeText={setRegisterNumber}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+            <View style={styles.inputContainer}>
+              <Feather name="lock" size={width * 0.05} color="#999" style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                autoCapitalize="none"
+                placeholderTextColor="#999"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+              />
+            </View>
 
-        <TouchableOpacity style={styles.signInButton} onPress={handleLogin}>
-          <Text style={styles.signInButtonText}>Sign in</Text>
-        </TouchableOpacity>
+            <Pressable 
+              style={({ pressed }) => [
+                styles.signInButton, 
+                pressed && styles.signInButtonPressed,
+                loading && styles.signInButtonLoading
+              ]} 
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.signInButtonText}>Sign In</Text>
+              )}
+            </Pressable>
 
-        <Text style={styles.signupText}>
-          Don’t have an account?{" "}
-          <Text onPress={() => router.replace("/teacher-signup")} style={styles.signupLink}>
-            Signup
-          </Text>
-        </Text>
-      </View>
+            <Text style={styles.signupText}>
+              Don’t have an account?{" "}
+              <Text onPress={() => router.replace("/teacher-signup")} style={styles.signupLink}>
+                Sign Up
+              </Text>
+            </Text>
+          </Animated.View>
+        </KeyboardAvoidingView>
     </SafeAreaView>
   );
-}``
+}
 
-const styles = StyleSheet.create({
+// Function to create responsive styles
+const createStyles = (width: number, height: number) => StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f5f5f5', // Original light grey background
+  },
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-    paddingHorizontal: 20,
     alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: width * 0.05,
   },
   logoContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 40,
+    marginBottom: height * 0.05,
   },
   logo: {
-    width: 45,
-    height: 45,
-    marginRight: 8,
+    width: width * 0.12,
+    height: width * 0.12,
+    marginRight: 10,
     resizeMode: "contain",
   },
   logoText: {
-    fontSize: 20,
+    fontSize: width * 0.07,
     fontWeight: "600",
-    color: "#014CAB",
+    color: "#014CAB", // Changed back to dark blue for visibility
   },
   connectText: {
-    color: "#007bff",
+    fontWeight: "bold",
+    color: "#007bff", // Changed back to original connect color
   },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    paddingVertical: 30,
-    paddingHorizontal: 25,
-    marginTop: 50,
-    width: "100%",
+    backgroundColor: "#ffffff", // Solid white card
+    borderRadius: 25,
+    padding: width * 0.07,
+    width: '100%',
+    maxWidth: 400,
     alignItems: "center",
-    elevation: 5,
+    elevation: 10,
     shadowColor: "#000",
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 5 },
   },
   avatar: {
-    width: 100,
-    height: 100,
+    width: width * 0.25,
+    height: width * 0.25,
     marginBottom: 20,
     resizeMode: "contain",
   },
   loginText: {
-    fontSize: 22,
+    fontSize: width * 0.065,
     fontWeight: "bold",
-    marginBottom: 20,
+    color: "#333",
+    marginBottom: 25,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: "#f0f2f5",
+    borderRadius: 30,
+    width: '100%',
+    marginBottom: 15,
+    paddingHorizontal: 20,
+  },
+  icon: {
+    marginRight: 10,
   },
   input: {
-    width: "100%",
-    backgroundColor: "#f0f0f0",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    marginBottom: 15,
-    fontSize: 16,
+    flex: 1,
+    paddingVertical: 15,
+    fontSize: width * 0.04,
     color: "#333",
   },
   signInButton: {
     backgroundColor: "#007bff",
-    borderRadius: 25,
-    paddingVertical: 12,
-    paddingHorizontal: 40,
+    borderRadius: 30,
+    paddingVertical: 15,
+    width: '100%',
+    alignItems: 'center',
     marginTop: 10,
+    elevation: 3,
+  },
+  signInButtonPressed: {
+    backgroundColor: "#0056b3",
+  },
+  signInButtonLoading: {
+    backgroundColor: "#0056b3",
   },
   signInButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: width * 0.045,
     fontWeight: "bold",
   },
   signupText: {
     marginTop: 20,
-    fontSize: 14,
-    color: "#333",
+    fontSize: width * 0.038,
+    color: "#555",
   },
   signupLink: {
     color: "#007bff",
-    fontWeight: "600",
+    fontWeight: "bold",
   },
 });
