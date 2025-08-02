@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BASE_URL } from "@/constant";
 import {
   View,
@@ -10,52 +10,79 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  Keyboard,
+  Platform
 } from "react-native";
 
-
 import { Link, useRouter } from "expo-router";
+import DateTimePicker from "@react-native-community/datetimepicker"; // ✅ NEW
 
-type FormField = 'fullName' | 'registerNumber' | 'dob' | 'phonenumber' | 'email' | 'password';
-
+type FormField = 'fullName' | 'registerNumber' | 'phonenumber' | 'email' | 'password';
 
 export default function SignupScreen() {
   const router = useRouter();
-  const fields: FormField[] = ['fullName', 'registerNumber','phonenumber' ,'dob', 'email', 'password'];
-  
+
+  const fields: FormField[] = ['fullName', 'registerNumber', 'phonenumber', 'email', 'password'];
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   const [form, setForm] = useState<Record<FormField, string>>({
     fullName: "",
     registerNumber: "",
-    dob: "",
     email: "",
-    phonenumber:"",
+    phonenumber: "",
     password: "",
   });
-  
+
+  const [dob, setDob] = useState<Date | null>(null); // ✅ NEW
+  const [showDatePicker, setShowDatePicker] = useState(false); // ✅ NEW
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setIsKeyboardOpen(true);
+    });
+
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setIsKeyboardOpen(false);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   const handleChange = (field: FormField, value: string) => {
     setForm({ ...form, [field]: value });
   };
-const handleSignup = async () => {
-  try {
-    const payload = {
-      name: form.fullName,
-      reg_no: form.registerNumber,
-      ph_no: form.phonenumber,
-      dob: form.dob,
-      mail: form.email,
-      password: form.password,
-    };
 
-    const response = await fetch(`${BASE_URL}/api/auth/register/alumni`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+  const handleSignup = async () => {
+    try {
+      if (!dob) {
+        Alert.alert("Missing DOB", "Please select your Date of Birth.");
+        return;
+      }
 
-    const data = await response.json();
+      const formattedDOB = `${dob.getFullYear()}-${String(dob.getMonth() + 1).padStart(2, '0')}-${String(dob.getDate()).padStart(2, '0')}`;
+      
+      console.log("Formatted DOB:", formattedDOB);
+      const payload = {
+        name: form.fullName,
+        reg_no: form.registerNumber,
+        ph_no: form.phonenumber,
+        dob: formattedDOB,
+        mail: form.email,
+        password: form.password,
+      };
+
+      const response = await fetch(`${BASE_URL}/api/auth/register/alumni`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
 
       if (response.ok) {
         Alert.alert("Success", "Account created successfully!", [
@@ -70,9 +97,20 @@ const handleSignup = async () => {
     }
   };
 
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) setDob(selectedDate);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: 20,
+          paddingBottom: isKeyboardOpen ? 500 : 20,
+        }}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Top Logo */}
         <View style={styles.logoContainer}>
           <Image source={require("../assets/avc app logo.png")} style={styles.logo} />
@@ -87,6 +125,7 @@ const handleSignup = async () => {
           <Image source={require("../assets/alumni.png")} style={styles.avatar} />
           <Text style={styles.heading}>Signup</Text>
 
+          {/* Render text inputs */}
           {fields.map((field) => (
             <TextInput
               key={field}
@@ -94,18 +133,50 @@ const handleSignup = async () => {
               placeholder={
                 field === "registerNumber"
                   ? "Enter register number"
-                  : field === "dob"
-                  ? "Date of Birth (DD/MM/YYYY)"
                   : field === "phonenumber"
-                  ? "phonenumber"
+                  ? "Phone Number"
+                  : field === "email"
+                  ? "Email ID"
                   : field.charAt(0).toUpperCase() + field.slice(1)
               }
               placeholderTextColor="#999"
               secureTextEntry={field === "password"}
               value={form[field]}
               onChangeText={(text) => handleChange(field, text)}
+              keyboardType={
+                field === "email"
+                  ? "email-address"
+                  : field === "registerNumber"
+                  ? "numeric"
+                  : field === "phonenumber"
+                  ? "phone-pad"
+                  : "default"
+              }
+              autoCapitalize={"none"}
+              autoCorrect={field === "email" || field === "password" ? false : true}
             />
           ))}
+
+          {/* ✅ Date Picker Field */}
+          <TouchableOpacity
+            style={styles.input}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text style={{ color: dob ? "#000" : "#999" }}>
+              {dob ? dob.toLocaleDateString() : "Date of Birth (Tap to select)"}
+            </Text>
+          </TouchableOpacity>
+
+          {/* ✅ Calendar Picker Modal */}
+          {showDatePicker && (
+            <DateTimePicker
+              value={dob || new Date(2000, 0, 1)}
+              mode="date"
+              display={Platform.OS === "ios" ? "inline" : "default"}
+              onChange={handleDateChange}
+              maximumDate={new Date()}
+            />
+          )}
 
           <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
             <Text style={styles.signupButtonText}>Signup</Text>
@@ -123,15 +194,10 @@ const handleSignup = async () => {
   );
 }
 
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-  },
-  container: {
-    padding: 20,
-    alignItems: "center",
   },
   logoContainer: {
     flexDirection: "row",
@@ -205,4 +271,4 @@ const styles = StyleSheet.create({
     color: "#007bff",
     fontWeight: "600",
   },
-});
+})
