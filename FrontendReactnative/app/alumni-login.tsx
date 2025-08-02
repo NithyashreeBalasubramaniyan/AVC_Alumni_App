@@ -114,7 +114,7 @@ export default function SignInScreen() {
 
           <Animated.View style={[styles.card, cardAnimatedStyle]}>
             <Image source={require("../assets/alumni.png")} style={styles.avatar} />
-            <Text style={styles.loginText}>Student Login</Text>
+            <Text style={styles.loginText}>Alumni Login</Text>
             
             <View style={styles.inputContainer}>
               <Feather name="user" size={width * 0.05} color="#999" style={styles.icon} />
@@ -159,7 +159,7 @@ export default function SignInScreen() {
 
             <Text style={styles.signupText}>
               Don’t have an account?{" "}
-              <Text onPress={() => router.replace("/Student-signup")} style={styles.signupLink}>
+              <Text onPress={() => router.replace("/alumni-signup")} style={styles.signupLink}>
                 Sign Up
               </Text>
             </Text>
