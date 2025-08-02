@@ -44,11 +44,16 @@ interface Student {
   Post: Post[]; // Posts are now part of the student data
 }
 
+
+
+
 interface ProfileResponse {
   success: boolean;
   data: Student;
   message?: string;
 }
+
+
 
 const AnimatedPostItem = ({ item, index }: { item: Post, index: number }) => {
   const style = useAnimatedStyle(() => {
@@ -108,6 +113,7 @@ const ProfileScreen = () => {
 
       if (response.data.success) {
         const fetchedStudent = response.data.data;
+        AsyncStorage.setItem("userData", JSON.stringify({ name: fetchedStudent.name, profile_image: fetchedStudent.profile_image, job_role: fetchedStudent.job_role }) ).catch(e => console.log(e.message))
         fetchedStudent.Bio = fetchedStudent.Bio || "Passionate Full-Stack Developer | Lifelong Learner | Tech Enthusiast creating solutions for a better tomorrow.";
         setStudent(fetchedStudent);
         profileCardAnimation.value = withTiming(1, { duration: 800 });

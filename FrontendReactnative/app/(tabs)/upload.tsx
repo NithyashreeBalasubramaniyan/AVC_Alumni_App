@@ -32,7 +32,7 @@ const PostScreen: React.FC = () => {
   const [image, setImage] = useState<SelectedImage | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false); // New state for modal overlay
-
+  const [userInfo, setUserInfo] = useState({name: "User", profile_image: 'https://i.pravatar.cc/100', job_role: ""})
   const MAX_CAPTION_LENGTH = 500;
 
   // --- 1. Token Loading (No changes to logic) ---
@@ -40,7 +40,10 @@ const PostScreen: React.FC = () => {
     const loadToken = async () => {
       try {
         const storedToken = await AsyncStorage.getItem('token');
+        const userData = JSON.parse(await AsyncStorage.getItem('userData') || "null")
         setToken(storedToken);
+        setUserInfo(userData);
+        console.log(userInfo.profile_image)
         if (!storedToken) {
           Alert.alert(
             'Authentication Needed',
@@ -179,12 +182,12 @@ const PostScreen: React.FC = () => {
           <Animated.View entering={FadeInUp.duration(500)} style={styles.headerContainer}>
             <View style={styles.profileContainer}>
               <Image
-                source={{ uri: 'https://i.pravatar.cc/100' }}
+                source={{ uri: `${BASE_URL}${userInfo.profile_image}`  }}
                 style={styles.avatar}
               />
               <View>
-                <Text style={styles.name}>Mohammed Tharik</Text>
-                <Text style={styles.role}>Student @ AVC</Text>
+                <Text style={styles.name}>{userInfo.name}</Text>
+                <Text style={styles.role}>{userInfo.job_role}</Text>
               </View>
             </View>
             <TouchableOpacity
