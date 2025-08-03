@@ -12,6 +12,8 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
+  StatusBar,
+  TouchableOpacity
 } from "react-native";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "expo-router";
@@ -37,6 +39,7 @@ export default function SignInScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false)
 
   // Animation values using react-native-reanimated
   const logoTranslateY = useSharedValue(-100);
@@ -101,6 +104,10 @@ export default function SignInScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar
+    barStyle="dark-content" // or "light-content" depending on your background
+    backgroundColor="#f5f5f5" // match your SafeArea background
+  />
         <KeyboardAvoidingView 
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.container}
@@ -127,6 +134,7 @@ export default function SignInScreen() {
                 onChangeText={setRegisterNumber}
               />
             </View>
+            {(registerNumber && registerNumber.length<12) && <Text style={{color: 'red', width: '80%', marginBottom: 10}}>register number has 12 digits</Text>}
 
             <View style={styles.inputContainer}>
               <Feather name="lock" size={width * 0.05} color="#999" style={styles.icon} />
@@ -135,10 +143,14 @@ export default function SignInScreen() {
                 placeholder="Password"
                 autoCapitalize="none"
                 placeholderTextColor="#999"
-                secureTextEntry
+                secureTextEntry={!showPassword}
                 value={password}
                 onChangeText={setPassword}
               />
+              <TouchableOpacity onPress={()=>setShowPassword(!showPassword)}>
+                {showPassword && <Feather name="eye" size={width * 0.05} color="#999" style={styles.icon} />}
+                {!showPassword && <Feather name="eye-off" size={width * 0.05} color="#999" style={styles.icon} />}   
+              </TouchableOpacity>
             </View>
 
             <Pressable 

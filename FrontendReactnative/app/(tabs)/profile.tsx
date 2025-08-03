@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Pressable,
+  StatusBar,
   RefreshControl,
 } from "react-native";
 import axios, { AxiosError } from "axios";
@@ -183,7 +184,7 @@ const ProfileScreen = () => {
   const renderProfileHeader = () => (
     <Animated.View style={[styles.profileCard, profileCardStyle]}>
         <Image
-            source={{ uri: fullCoverPhotoUrl ?? `https://picsum.photos/seed/${student.reg_no}/800/400` }}
+            source={{ uri: fullCoverPhotoUrl ?? `https://picsum.photos/seed/${3}/800/400` }}
             style={styles.coverImage}
         />
         <Image
@@ -277,7 +278,11 @@ const ProfileScreen = () => {
                 tintColor={theme.colors.primary}
             />
         }
-    >
+    ><StatusBar
+              barStyle="light-content" // or "light-content" depending on your background
+              backgroundColor="#f5f5f5" // match your SafeArea background
+      />
+      
       {renderProfileHeader()}
       {renderStatsAndActions()}
       {renderTabBar()}

@@ -12,6 +12,7 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity,
 } from "react-native";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "expo-router";
@@ -19,6 +20,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay } from 'react-native-reanimated';
 import { Feather } from '@expo/vector-icons';
 import { BASE_URL } from "@/constant";
+
 
 // Define the response interface
 interface LoginResponse {
@@ -36,6 +38,7 @@ export default function SignInScreen() {
   const [registerNumber, setRegisterNumber] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter();
 
   // Animation values using react-native-reanimated
@@ -127,6 +130,7 @@ export default function SignInScreen() {
                 onChangeText={setRegisterNumber}
               />
             </View>
+            {(registerNumber && registerNumber.length<12) && <Text style={{color: 'red', width: '80%', marginBottom: 10}}>register number has 12 digits</Text>}
 
             <View style={styles.inputContainer}>
               <Feather name="lock" size={width * 0.05} color="#999" style={styles.icon} />
@@ -135,10 +139,14 @@ export default function SignInScreen() {
                 placeholder="Password"
                 autoCapitalize="none"
                 placeholderTextColor="#999"
-                secureTextEntry
+                secureTextEntry={showPassword}
                 value={password}
                 onChangeText={setPassword}
               />
+              <TouchableOpacity onPress={()=>setShowPassword(!showPassword)}>
+                {showPassword && <Feather name="eye" size={width * 0.05} color="#999" style={styles.icon} />}
+                {!showPassword && <Feather name="eye-off" size={width * 0.05} color="#999" style={styles.icon} />}   
+              </TouchableOpacity>
             </View>
 
             <Pressable 

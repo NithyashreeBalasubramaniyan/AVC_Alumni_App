@@ -18,6 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 import * as ImagePicker from 'expo-image-picker';
 import { BASE_URL } from "@/constant"; // Replace with your actual backend URL
+import { SegmentedButtons, RadioButton } from 'react-native-paper';
 
 const { height: screenHeight } = Dimensions.get("window");
 
@@ -242,22 +243,42 @@ export default function UpdateProfile() {
           />
 
           <Text style={styles.label}>Experience</Text>
-          <View style={styles.pickerWrapper}>
-            <RNPickerSelect
-              onValueChange={(value) => handleChange("experience", value)}
-              value={formData.experience}
-              placeholder={{ label: "Select Experience", value: null }}
-              items={[
-                { label: "Fresher", value: "Fresher" },
-                { label: "1 year", value: "1 year" },
-                { label: "2 years", value: "2 years" },
-                { label: "3+ years", value: "3+ years" },
-              ]}
-              style={pickerStyles}
-              useNativeAndroidPickerStyle={false}
-              Icon={() => <Text style={styles.icon}>▼</Text>}
-            />
-          </View>
+          <SegmentedButtons style={{marginBottom: 12,}}
+  value={formData.experience}
+  onValueChange={(value) => handleChange("experience", value)}
+  buttons={[
+    {
+      value: 'Fresher',
+      label: 'Fresher',
+      style: formData.experience === 'Fresher' && {
+        backgroundColor: '#d1e1ffff', // light blue
+      },
+    },
+    {
+      value: '1 year',
+      label: '1 year',
+      style: formData.experience === '1 year' && {
+        backgroundColor: '#d1e1ffff',
+      },
+    },
+    {
+      value: '2 years',
+      label: '2 years',
+      style: formData.experience === '2 years' && {
+        backgroundColor: '#d1e1ffff',
+      },
+    },
+    {
+      value: '3+ years',
+      label: '3+ years',
+      style: formData.experience === '3+ years' && {
+        backgroundColor: '#d1e1ffff',
+      },
+    },
+  ]}
+/>
+
+
 
           <TextInput
             ref={techRef}
@@ -285,23 +306,26 @@ export default function UpdateProfile() {
               Icon={() => <Text style={styles.icon}>▼</Text>}
             />
           </View>
+          
 
           <Text style={styles.label}>Gender</Text>
-          <View style={styles.pickerWrapper}>
-            <RNPickerSelect
-              onValueChange={(value) => handleChange("gender", value)}
-              value={formData.gender}
-              placeholder={{ label: "Select Gender", value: null }}
-              items={[
-                { label: "Male", value: "Male" },
-                { label: "Female", value: "Female" },
-                { label: "Other", value: "Other" },
-              ]}
-              style={pickerStyles}
-              useNativeAndroidPickerStyle={false}
-              Icon={() => <Text style={styles.icon}>▼</Text>}
-            />
-          </View>
+          <SegmentedButtons
+  value={formData.gender}
+  onValueChange={(value) => handleChange("gender", value)}
+  buttons={[
+    {
+      value: 'Male',
+      label: 'Male',
+      style: formData.gender === 'Male' && { backgroundColor: '#d1e1ffff' },
+    },
+    {
+      value: 'Female',
+      label: 'Female',
+      style: formData.gender === 'Female' && { backgroundColor: '#d1e1ffff' },
+    }
+  ]}
+/>
+
 
           <TouchableOpacity style={styles.button} onPress={handleSubmit}>
             <Text style={styles.buttonText}>Update Profile</Text>
@@ -365,8 +389,6 @@ const styles = StyleSheet.create({
   },
   pickerWrapper: {
     width: "100%",
-    borderColor: "#ccc",
-    borderWidth: 1,
     borderRadius: 8,
     marginBottom: 12,
     backgroundColor: "white",
