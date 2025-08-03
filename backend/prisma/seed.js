@@ -1,176 +1,149 @@
 const { PrismaClient } = require('@prisma/client');
-
 const prisma = new PrismaClient();
 
 async function main() {
-  
-  // Create a sample student
-  await prisma.existingStudent.create({
-    "data": {
-    "name": "venkat",
-    "reg_no": "820310104008",
-    "dob": new Date("2000-01-18"),
-    "mail": "venkat@gmail.com"
+  // ----------------------------------------------------------------
+  // 1. Clear all existing data from the database
+  // ----------------------------------------------------------------
+  // Deleting in a specific order to respect relationships
+  console.log('Deleting existing data...');
+  await prisma.post.deleteMany();
+  await prisma.student.deleteMany();
+  await prisma.teacher.deleteMany();
+  await prisma.alumni.deleteMany();
+  await prisma.existingStudent.deleteMany();
+  await prisma.existingTeacher.deleteMany();
+  await prisma.existingalumni.deleteMany();
+  console.log('All data deleted.');
+
+  // ----------------------------------------------------------------
+  // 2. Seed Existing Students (10 records)
+  // ----------------------------------------------------------------
+  console.log('Seeding existing students...');
+  const existingStudents = [];
+  for (let i = 1; i <= 10; i++) {
+    existingStudents.push({
+      name: `Existing Student ${i}`,
+      // Updated to generate a 12-digit registration number
+      reg_no: `8203231040${String(i).padStart(2, '0')}`,
+      dob: new Date(`2001-01-${String(i).padStart(2, '0')}`),
+      mail: `existing.student${i}@example.com`,
+    });
   }
-    
-  })
+  await prisma.existingStudent.createMany({ data: existingStudents });
+  console.log('Created 10 existing students.');
 
-  // await prisma.existingalumni.createMany({
-  //   "data": [{
-  //   "name": "alumni",
-  //   "reg_no": "820310104001",
-  //   "dob": new Date("2000-01-01"),
-  //   "mail": "alumni1@gmail.com"
-  // },
-  // {
-  //   "name": "alumni2",
-  //   "reg_no": "820310104002",
-  //   "dob": new Date("2000-01-01"),
-  //   "mail": "alumni2@gmail.com"
-  // }
-  // ]   
-  // })
+  // ----------------------------------------------------------------
+  // 3. Seed Existing Teachers (10 records)
+  // ----------------------------------------------------------------
+  console.log('Seeding existing teachers...');
+  const existingTeachers = [];
+  for (let i = 1; i <= 10; i++) {
+    existingTeachers.push({
+      name: `Existing Teacher ${i}`,
+      reg_no: `T${String(1000 + i)}`,
+      dob: new Date(`1980-01-${String(i).padStart(2, '0')}`),
+      mail: `existing.teacher${i}@example.com`,
+    });
+  }
+  await prisma.existingTeacher.createMany({ data: existingTeachers });
+  console.log('Created 10 existing teachers.');
 
-//   await prisma.existingTeacher.createMany({
-//     "data": [{
-//     "name": "teacher",
-//     "reg_no": "1113",
-//     "dob": new Date("2000-01-01"),
-//     "mail": "teacher@gmail.com"
-//   },
-//   {
-//     "name": "teacher2",
-//     "reg_no": "2224",
-//     "dob": new Date("2000-01-01"),
-//     "mail": "teacher2@gmail.com"
-//   }
-//   ]   
-//   })
+  // ----------------------------------------------------------------
+  // 4. Seed Existing Alumni (10 records)
+  // ----------------------------------------------------------------
+  console.log('Seeding existing alumni...');
+  const existingAlumni = [];
+  for (let i = 1; i <= 10; i++) {
+    existingAlumni.push({
+      name: `Existing Alumni ${i}`,
+      // Updated to generate a 12-digit registration number
+      reg_no: `8203181040${String(i).padStart(2, '0')}`,
+      dob: new Date(`1996-01-${String(i).padStart(2, '0')}`),
+      mail: `existing.alumni${i}@example.com`,
+    });
+  }
+  await prisma.existingalumni.createMany({ data: existingAlumni });
+  console.log('Created 10 existing alumni.');
 
-//   await prisma.student.createMany({
-//     data: [
-//   {
-//     name: "Arjun R",
-//     reg_no: "82032310401",
-//     ph_no: "9876543210",
-//     dob: new Date("2001-04-10"),
-//     mail: "arjunr@example.com",
-//     password: "hashed_password_1",
-//     job_role: "Software Engineer",
-//     Linkedin_id: "https://linkedin.com/in/arjunr",
-//     Experience: "1 year",
-//     Gender: "Male",
-//     Company: "Infosys",
-//     profile_image: "/uploads/arjun.jpg"
-//   },
-//   {
-//     name: "Meena S",
-//     reg_no: "82032310402",
-//     ph_no: "9876543211",
-//     dob: new Date("2001-06-15"),
-//     mail: "meenas@example.com",
-//     password: "hashed_password_2",
-//     job_role: "UI/UX Designer",
-//     Linkedin_id: "https://linkedin.com/in/meenas",
-//     Experience: "2 years",
-//     Gender: "Female",
-//     Company: "TCS",
-//     profile_image: "/uploads/meena.jpg"
-//   },
-//   {
-//     name: "Vignesh K",
-//     reg_no: "82032310403",
-//     ph_no: "9876543212",
-//     dob: new Date("2000-12-01"),
-//     mail: "vigneshk@example.com",
-//     password: "hashed_password_3",
-//     job_role: "Backend Developer",
-//     Linkedin_id: "https://linkedin.com/in/vigneshk",
-//     Experience: "1.5 years",
-//     Gender: "Male",
-//     Company: "Zoho",
-//     profile_image: "/uploads/vignesh.jpg"
-//   },
-//   {
-//     name: "Sneha R",
-//     reg_no: "82032310404",
-//     ph_no: "9876543213",
-//     dob: new Date("2001-03-22"),
-//     mail: "snehar@example.com",
-//     password: "hashed_password_4",
-//     job_role: "QA Engineer",
-//     Linkedin_id: "https://linkedin.com/in/snehar",
-//     Experience: "6 months",
-//     Gender: "Female",
-//     Company: "Capgemini",
-//     profile_image: "/uploads/sneha.jpg"
-//   },
-//   {
-//     name: "Hari V",
-//     reg_no: "82032310405",
-//     ph_no: "9876543214",
-//     dob: new Date("2000-09-18"),
-//     mail: "hariv@example.com",
-//     password: "hashed_password_5",
-//     job_role: "DevOps Engineer",
-//     Linkedin_id: "https://linkedin.com/in/hariv",
-//     Experience: "2 years",
-//     Gender: "Male",
-//     Company: "Wipro",
-//     profile_image: "/uploads/hari.jpg"
-//   }
-// ]
-//   })
+  // ----------------------------------------------------------------
+  // 5. Create 5 verified Student profiles from Existing Students
+  // ----------------------------------------------------------------
+  console.log('Creating 5 student profiles...');
+  const studentProfiles = [];
+  for (let i = 1; i <= 5; i++) {
+    studentProfiles.push({
+      name: `Existing Student ${i}`,
+      // Updated to generate a 12-digit registration number
+      reg_no: `8203231040${String(i).padStart(2, '0')}`,
+      ph_no: `987654321${i}`,
+      dob: new Date(`2001-01-${String(i).padStart(2, '0')}`),
+      mail: `existing.student${i}@example.com`,
+      password: `password${i}`,
+      job_role: 'Software Engineer Intern',
+      Company: 'Startup Inc.',
+      Gender: i % 2 === 0 ? 'Female' : 'Male',
+      is_verified: true,
+    });
+  }
+  await prisma.student.createMany({ data: studentProfiles });
+  console.log('Created 5 student profiles.');
 
-  //  await prisma.Student.deleteMany()
+  // ----------------------------------------------------------------
+  // 6. Create 5 verified Teacher profiles from Existing Teachers
+  // ----------------------------------------------------------------
+  console.log('Creating 5 teacher profiles...');
+  const teacherProfiles = [];
+  for (let i = 1; i <= 5; i++) {
+    teacherProfiles.push({
+      name: `Existing Teacher ${i}`,
+      reg_no: `T${String(1000 + i)}`,
+      ph_no: `876543210${i}`,
+      dob: new Date(`1980-01-${String(i).padStart(2, '0')}`),
+      mail: `existing.teacher${i}@example.com`,
+      password: `password${i}`,
+      job_role: 'Professor',
+      Experience: `${5 + i} years`,
+      Gender: i % 2 === 0 ? 'Male' : 'Female',
+      is_verified: true,
+    });
+  }
+  await prisma.teacher.createMany({ data: teacherProfiles });
+  console.log('Created 5 teacher profiles.');
 
-//  await prisma.post.deleteMany()
+  // ----------------------------------------------------------------
+  // 7. Create 5 verified Alumni profiles from Existing Alumni
+  // ----------------------------------------------------------------
+  console.log('Creating 5 alumni profiles...');
+  const alumniProfiles = [];
+  for (let i = 1; i <= 5; i++) {
+    alumniProfiles.push({
+      name: `Existing Alumni ${i}`,
+      // Updated to generate a 12-digit registration number
+      reg_no: `8203181040${String(i).padStart(2, '0')}`,
+      ph_no: `765432109${i}`,
+      dob: new Date(`1996-01-${String(i).padStart(2, '0')}`),
+      mail: `existing.alumni${i}@example.com`,
+      password: `password${i}`,
+      job_role: 'Senior Developer',
+      Company: 'Big Tech LLC',
+      Experience: `${i} years`,
+      Gender: i % 2 === 0 ? 'Female' : 'Male',
+      is_verified: true,
+    });
+  }
+  await prisma.alumni.createMany({ data: alumniProfiles });
+  console.log('Created 5 alumni profiles.');
 
-
-//   await prisma.post.createMany({
-//     data: [
-//   {
-//     caption: "Exploring new opportunities at Infosys!",
-//     image: "/uploads/post(1).JPEG",
-//     role: "STUDENT",
-//     studentId: 1
-//   },
-//   {
-//     caption: "Thrilled to share my recent design at TCS!",
-//     image: "/uploads/post(2).JPEG",
-//     role: "STUDENT",
-//     studentId: 2
-//   },
-//   {
-//     caption: "Backend systems are fun to build!",
-//     image: "/uploads/post(3).JPEG",
-//     role: "STUDENT",
-//     studentId: 2
-//   },
-//   {
-//     caption: "QA is all about perfection. Loving my job!",
-//     image: "/uploads/post(4).JPEG",
-//     role: "STUDENT",
-//     studentId: 1
-//   },
-//   {
-//     caption: "DevOps journey has been amazing so far.",
-//     image: "/uploads/post(5).JPEG",
-//     role: "STUDENT",
-//     studentId: 5
-//   }
-// ]
-// })
-
-
-  console.log('created post created!');
+  console.log('Database seeding completed successfully!');
 }
 
 main()
   .catch((e) => {
+    console.error('An error occurred during seeding:');
     console.error(e);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
-  }); 
+  });

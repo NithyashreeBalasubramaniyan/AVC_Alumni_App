@@ -213,13 +213,13 @@ const ProfileScreen = () => {
             <FontAwesome name="pencil" size={16} color="#fff" />
             <Text style={styles.enhanceButtonText}>Edit Profile</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        {/* <TouchableOpacity 
             style={styles.enhanceButton}
             onPress={() => router.push({ pathname: "/(EditPost)" })}
         >
             <FontAwesome name="pencil" size={16} color="#fff" />
             <Text style={styles.enhanceButtonText}>Edit Post</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
     </View>
   );
   

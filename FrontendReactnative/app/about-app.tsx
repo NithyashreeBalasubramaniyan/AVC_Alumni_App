@@ -1,13 +1,12 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-
-const alumni = () => {
+const about = () => {
   return (
     <View>
-      <Text>alumni-home</Text>
+      <Text>about the app</Text>
     </View>
   )
 }
 
-export default alumni
+export default about;

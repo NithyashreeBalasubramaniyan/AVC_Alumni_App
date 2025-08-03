@@ -1,12 +1,12 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-const  screen = () => {
+const developers = () => {
   return (
     <View>
-      <Text> visit Screen </Text>
+      <Text>developers</Text>
     </View>
   )
 }
 
-export default  screen
+export default developers
