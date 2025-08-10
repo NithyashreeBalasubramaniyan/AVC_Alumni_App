@@ -67,6 +67,16 @@ export default function TabsLayout(): JSX.Element {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="event"
+        options={{
+          title: "Event",
+          tabBarIcon: ({ color }: { color: string }) => (
+            <Entypo name="sound" size={26} color={color} />
+          ),
+        }}
+      />
       
       <Tabs.Screen
         name="upload"

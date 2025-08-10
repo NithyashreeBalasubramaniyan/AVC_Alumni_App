@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { createPost, getPost, updatePost, deletePost, searchPosts, getPostById } = require('../controllers/postController');
+const { createPost, getPost,getPostEvent, updatePost, deletePost, searchPosts, getPostById } = require('../controllers/postController');
 
 // Storage config
 const storage = multer.diskStorage({
@@ -19,7 +19,7 @@ const upload = multer({ storage });
 
 router.post('/create', upload.single('image'), createPost);
 router.get('/getall', getPost);
-router.get('/getallevent', getPost);
+router.get('/getallevent', getPostEvent);
 router.get('/get/:id', getPostById);
 router.put('/update', upload.single('image'), updatePost);
 router.delete('/delete', deletePost);
