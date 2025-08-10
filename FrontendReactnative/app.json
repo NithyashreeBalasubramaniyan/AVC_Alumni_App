@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "Alumini Connect",
+    "owner": "karthikrishna",
     "slug": "AVC-College-Connects-Us",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -22,7 +23,7 @@
         "WRITE_EXTERNAL_STORAGE"
       ],
       "edgeToEdgeEnabled": true,
-      "package": "com.vimaldharshan.avccollegeconnectsus"
+      "package": "com.karthikrishna.AVCCollegeConnectsUs"
     },
     "splash": {
       "image": "./assets/applogo.png",
@@ -52,7 +53,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "e7aa2e38-4a89-451b-8028-53c3433fc09d"
+        "projectId": "02f60927-6300-4fe5-8222-5919317fc640"
       }
     }
   }
