@@ -12,7 +12,7 @@ const decodeToken = (token) => {
 
 const createPost = async (req, res) => {
   try {
-    const { caption, token } = req.body;
+    const { caption, token, category } = req.body;
     const file = req.file;
 
   
@@ -31,7 +31,7 @@ const createPost = async (req, res) => {
     else if (role === 'TEACHER') teacherId = userId;
 
     const post = await prisma.post.create({
-      data: { caption, image: imagePath, role, studentId, alumniId, teacherId },
+      data: { caption, category, image: imagePath, role, studentId, alumniId, teacherId },
       include: {
         student: { select: { name: true, job_role: true } },
         alumni: { select: { name: true, job_role: true } },
@@ -54,6 +54,28 @@ const createPost = async (req, res) => {
 const getPost = async (req, res) => {
   try {
     const allPost = await prisma.post.findMany({
+        where: {
+          category: "post"
+        },
+      include: {
+        student: { select: { name: true, job_role: true, profile_image: true } },
+        alumni: { select: { name: true, job_role: true, profile_image: true } },
+        teacher: { select: { name: true, job_role: true, profile_image: true } },
+      }
+    });
+    res.status(200).json({ success: true, message: "get all posts", data: allPost });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get All Posts
+const getPostEvent = async (req, res) => {
+  try {
+    const allPost = await prisma.post.findMany({
+        where: {
+          category: "event"
+        },
       include: {
         student: { select: { name: true, job_role: true, profile_image: true } },
         alumni: { select: { name: true, job_role: true, profile_image: true } },
@@ -301,4 +323,4 @@ const searchPosts = async (req, res) => {
 
 
 
-module.exports = { createPost, getPost, updatePost, deletePost,searchPosts,getPostById };
+module.exports = { createPost, getPost, updatePost, deletePost,searchPosts,getPostById, getPostEvent };

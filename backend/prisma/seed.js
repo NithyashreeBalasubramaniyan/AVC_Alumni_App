@@ -7,13 +7,13 @@ async function main() {
   // ----------------------------------------------------------------
   // Deleting in a specific order to respect relationships
   console.log('Deleting existing data...');
-  // await prisma.post.deleteMany();
-  // await prisma.student.deleteMany();
-  // await prisma.teacher.deleteMany();
-  // await prisma.alumni.deleteMany();
-  // await prisma.existingStudent.deleteMany();
-  // await prisma.existingTeacher.deleteMany();
-  // await prisma.existingalumni.deleteMany();
+  await prisma.post.deleteMany();
+  await prisma.student.deleteMany();
+  await prisma.teacher.deleteMany();
+  await prisma.alumni.deleteMany();
+  await prisma.existingStudent.deleteMany();
+  await prisma.existingTeacher.deleteMany();
+  await prisma.existingalumni.deleteMany();
   console.log('All data deleted.');
 
   // ----------------------------------------------------------------
