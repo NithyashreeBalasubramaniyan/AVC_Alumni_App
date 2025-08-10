@@ -273,7 +273,7 @@ const App = () => {
                             await AsyncStorage.removeItem('token');
                             setToken(null);
                             setPosts([]);
-                            router.replace('/main');
+                            router.replace('../index');
                         } catch (e) {
                             console.error('Failed to log out.', e);
                             Alert.alert('Error', 'Failed to log out. Please try again.');

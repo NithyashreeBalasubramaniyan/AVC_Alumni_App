@@ -212,7 +212,7 @@ const App = () => {
     };
 
     const fetchData = (query: string = '') => {
-        const url = query ? `${BASE_URL}/api/post/search?name=${encodeURIComponent(query)}` : `${BASE_URL}/api/post/getall`;
+        const url = query ? `${BASE_URL}/api/post/search?name=${encodeURIComponent(query)}` : `${BASE_URL}/api/post/getallevent`;
         setError('');
         if (!isRefreshing) setLoading(true);
 
@@ -273,7 +273,7 @@ const App = () => {
                             await AsyncStorage.removeItem('token');
                             setToken(null);
                             setPosts([]);
-                            router.replace('/main');
+                            router.replace('../index');
                         } catch (e) {
                             console.error('Failed to log out.', e);
                             Alert.alert('Error', 'Failed to log out. Please try again.');
