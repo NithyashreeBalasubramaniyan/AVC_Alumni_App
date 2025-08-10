@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from '@/constant';
+import { BASE_URL } from '../../constant';
 import { router, Href } from 'expo-router';
 
 // --- Constants & Configuration ---

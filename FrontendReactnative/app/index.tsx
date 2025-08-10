@@ -13,7 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import axios from "axios";
 // Assuming BASE_URL is defined elsewhere, like in a constants file
-import { BASE_URL } from "@/constant";
+import { BASE_URL } from "../constant";
 
 type Role = "Student" | "Alumni" | "Teacher";
 

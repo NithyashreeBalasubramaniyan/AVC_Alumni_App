@@ -22,7 +22,7 @@ import Animated, {
   FadeInUp,
 } from "react-native-reanimated";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import { BASE_URL } from "@/constant";
+import { BASE_URL } from "../constant";
 
 const { width } = Dimensions.get("window");
 

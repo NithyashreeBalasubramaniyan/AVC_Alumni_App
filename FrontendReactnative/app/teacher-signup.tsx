@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BASE_URL } from "@/constant";
+import { BASE_URL } from "../constant";
 import {
   View,
   Text,

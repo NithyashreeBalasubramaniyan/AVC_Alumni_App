@@ -20,7 +20,7 @@ import { useRouter } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay } from 'react-native-reanimated';
 import { Feather } from '@expo/vector-icons';
-import { BASE_URL } from "@/constant";
+import { BASE_URL } from "../constant";
 
 
 // Define the response interface

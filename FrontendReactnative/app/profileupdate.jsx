@@ -17,7 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 import * as ImagePicker from 'expo-image-picker';
-import { BASE_URL } from "@/constant"; // Replace with your actual backend URL
+import { BASE_URL } from "../constant"; // Replace with your actual backend URL
 import { SegmentedButtons, RadioButton } from 'react-native-paper';
 
 const { height: screenHeight } = Dimensions.get("window");

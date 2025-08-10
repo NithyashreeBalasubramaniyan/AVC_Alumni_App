@@ -12,7 +12,7 @@ import {
 import React, { useRef, useEffect, useState, JSX } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { COLORS } from "../constants/theme";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 const Tab = createMaterialTopTabNavigator();
 const Tabs = withLayoutContext(Tab.Navigator);

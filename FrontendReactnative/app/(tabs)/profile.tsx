@@ -20,7 +20,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay, FadeInUp } from 'react-native-reanimated';
 import { Divider } from 'react-native-paper';
-import { BASE_URL } from "@/constant";
+import { BASE_URL } from "../..//constant";
 
 const { width } = Dimensions.get("window");
 
