@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Alumini Connect",
-    "slug": "AVC College Connects Us",
+    "slug": "avc-college-connects-us",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/applogo.png",
@@ -14,19 +14,20 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/applogo.png",
-        "resizeMode": "cover",  
+        "resizeMode": "cover",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
       ],
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.vimaldharshan.avccollegeconnectsus"
     },
     "splash": {
-      "image": "./assets/applogo.png",          
-      "resizeMode": "cover",                 
-      "backgroundColor": "#377AFF"             
+      "image": "./assets/applogo.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#377AFF"
     },
     "web": {
       "bundler": "metro",
@@ -47,6 +48,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e7aa2e38-4a89-451b-8028-53c3433fc09d"
+      }
     }
   }
 }

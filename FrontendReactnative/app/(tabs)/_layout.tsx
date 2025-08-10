@@ -67,6 +67,7 @@ export default function TabsLayout(): JSX.Element {
           ),
         }}
       />
+      
       <Tabs.Screen
         name="upload"
         options={{

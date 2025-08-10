@@ -12,13 +12,12 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   StatusBar,
-  Modal, // To create a loading overlay
+  Modal,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { BASE_URL } from '@/constant';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// Import react-native-reanimated for smooth animations
 import Animated, { FadeIn, FadeInUp, Layout } from 'react-native-reanimated';
 
 // Define the type for a selected image
@@ -28,23 +27,27 @@ type SelectedImage = {
   type: string;
 };
 
+// Define the type for the post category
+type PostCategory = 'post' | 'event';
+
 const PostScreen: React.FC = () => {
   const [caption, setCaption] = useState('');
   const [image, setImage] = useState<SelectedImage | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false); // New state for modal overlay
-  const [userInfo, setUserInfo] = useState({name: "User", profile_image: 'https://i.pravatar.cc/100', job_role: ""})
+  const [isUploading, setIsUploading] = useState(false);
+  const [userInfo, setUserInfo] = useState({ name: "User", profile_image: 'https://i.pravatar.cc/100', job_role: "" });
+  // --- NEW: State to manage the selected category ---
+  const [category, setCategory] = useState<PostCategory>('post');
   const MAX_CAPTION_LENGTH = 500;
 
-  // --- 1. Token Loading (No changes to logic) ---
+  // --- 1. Token Loading (No changes) ---
   useEffect(() => {
     const loadToken = async () => {
       try {
         const storedToken = await AsyncStorage.getItem('token');
-        const userData = JSON.parse(await AsyncStorage.getItem('userData') || "null")
+        const userData = JSON.parse(await AsyncStorage.getItem('userData') || "null");
         setToken(storedToken);
         setUserInfo(userData);
-        console.log(userData);
         if (!storedToken) {
           Alert.alert(
             'Authentication Needed',
@@ -58,7 +61,7 @@ const PostScreen: React.FC = () => {
     loadToken();
   }, []);
 
-  // --- 2. Image Picker Permissions (No changes to logic) ---
+  // --- 2. Image Picker Permissions (No changes) ---
   const requestStoragePermission = async (): Promise<boolean> => {
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -73,17 +76,17 @@ const PostScreen: React.FC = () => {
     return true;
   };
 
-  // --- 3. Image Selection Logic (No changes to logic) ---
+  // --- 3. Image Selection Logic (No changes) ---
   const selectImage = async () => {
     const hasPermission = await requestStoragePermission();
     if (!hasPermission) return;
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: 'images',
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.8, // Slightly higher quality
+        quality: 0.8,
       });
 
       if (!result.canceled && result.assets.length > 0) {
@@ -100,7 +103,7 @@ const PostScreen: React.FC = () => {
     }
   };
 
-  // --- 4. Post Submission Logic (Updated for better UX) ---
+  // --- 4. Post Submission Logic (Updated to include category) ---
   const handlePost = async () => {
     if (isUploading) return;
 
@@ -117,11 +120,12 @@ const PostScreen: React.FC = () => {
       return;
     }
 
-    setIsUploading(true); // Show the full-screen loading modal
+    setIsUploading(true);
 
     const formData = new FormData();
     formData.append('caption', caption.trim());
     formData.append('token', token);
+    formData.append('category', category);
 
     if (image) {
       formData.append('image', {
@@ -134,10 +138,10 @@ const PostScreen: React.FC = () => {
     try {
       await axios.post(`${BASE_URL}/api/post/create`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 30000, // 30-second timeout for larger uploads
+        timeout: 30000,
       });
 
-      Alert.alert('Success!', 'Your post has been shared.');
+      Alert.alert('Success!', `Your ${category} has been shared.`);
       setCaption('');
       setImage(null);
     } catch (error: any) {
@@ -154,7 +158,7 @@ const PostScreen: React.FC = () => {
       }
       Alert.alert('Upload Failed', errorMessage);
     } finally {
-      setIsUploading(false); // Hide the loading modal
+      setIsUploading(false);
     }
   };
 
@@ -169,7 +173,6 @@ const PostScreen: React.FC = () => {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.container}>
-          {/* --- Uploading Modal --- */}
           <Modal visible={isUploading} transparent={true} animationType="fade">
             <View style={styles.modalOverlay}>
               <View style={styles.modalContent}>
@@ -179,11 +182,10 @@ const PostScreen: React.FC = () => {
             </View>
           </Modal>
 
-          {/* --- Header --- */}
           <Animated.View entering={FadeInUp.duration(500)} style={styles.headerContainer}>
             <View style={styles.profileContainer}>
               <Image
-                source={{ uri: `${BASE_URL}${userInfo.profile_image}`  }}
+                source={{ uri: `${BASE_URL}${userInfo.profile_image}` }}
                 style={styles.avatar}
               />
               <View>
@@ -200,10 +202,25 @@ const PostScreen: React.FC = () => {
             </TouchableOpacity>
           </Animated.View>
 
-          {/* --- Main Content Card --- */}
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.mainCard}>
+            {/* --- NEW: Category Selector UI --- */}
+            <View style={styles.categorySelector}>
+              <TouchableOpacity
+                style={[styles.categoryButton, category === 'post' && styles.categoryButtonActive]}
+                onPress={() => setCategory('post')}
+              >
+                <Text style={[styles.categoryButtonText, category === 'post' && styles.categoryButtonTextActive]}>Post</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.categoryButton, category === 'event' && styles.categoryButtonActive]}
+                onPress={() => setCategory('event')}
+              >
+                <Text style={[styles.categoryButtonText, category === 'event' && styles.categoryButtonTextActive]}>Event</Text>
+              </TouchableOpacity>
+            </View>
+
             <TextInput
-              placeholder="What's on your mind?"
+              placeholder={category === 'post' ? "What's on your mind?" : "Tell us about your event..."}
               placeholderTextColor="#999"
               style={styles.input}
               value={caption}
@@ -212,7 +229,6 @@ const PostScreen: React.FC = () => {
               maxLength={MAX_CAPTION_LENGTH}
             />
             
-            {/* --- Image Preview --- */}
             {image && (
               <Animated.View
                 layout={Layout.springify()}
@@ -229,11 +245,10 @@ const PostScreen: React.FC = () => {
               </Animated.View>
             )}
 
-            {/* --- Card Footer with Actions --- */}
             <View style={styles.cardFooter}>
-               <TouchableOpacity style={styles.iconButton} onPress={selectImage}>
-                  <Image source={require('./assets/image.png')} style={styles.footerIcon} />
-               </TouchableOpacity>
+              <TouchableOpacity style={styles.iconButton} onPress={selectImage}>
+                <Image source={require('./assets/image.png')} style={styles.footerIcon} />
+              </TouchableOpacity>
               <Text style={styles.charCounter}>
                 {caption.length} / {MAX_CAPTION_LENGTH}
               </Text>
@@ -248,7 +263,6 @@ const PostScreen: React.FC = () => {
 
 export default PostScreen;
 
-// --- Styles ---
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
@@ -257,9 +271,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#F0F2F5', // Softer background color
+    backgroundColor: '#F0F2F5',
   },
-  // --- Header ---
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -287,20 +300,19 @@ const styles = StyleSheet.create({
     color: '#65676B',
   },
   postButton: {
-    backgroundColor: '#1877F2', // Facebook blue
+    backgroundColor: '#1877F2',
     borderRadius: 8,
     paddingHorizontal: 20,
     paddingVertical: 8,
   },
   postButtonDisabled: {
-    backgroundColor: '#A0C6F5', // Lighter, disabled color
+    backgroundColor: '#A0C6F5',
   },
   postText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },
-  // --- Main Content Card ---
   mainCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
@@ -311,6 +323,36 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
+  // --- NEW: Styles for Category Selector ---
+  categorySelector: {
+    flexDirection: 'row',
+    marginBottom: 15,
+    backgroundColor: '#E4E6EB',
+    borderRadius: 8,
+    padding: 4,
+  },
+  categoryButton: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  categoryButtonActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  categoryButtonText: {
+    fontWeight: '600',
+    fontSize: 16,
+    color: '#65676B',
+  },
+  categoryButtonTextActive: {
+    color: '#1877F2',
+  },
   input: {
     minHeight: 120,
     textAlignVertical: 'top',
@@ -318,7 +360,6 @@ const styles = StyleSheet.create({
     color: '#1C1E21',
     lineHeight: 26,
   },
-  // --- Image Preview ---
   imagePreviewContainer: {
     marginTop: 15,
     position: 'relative',
@@ -345,7 +386,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-  // --- Card Footer ---
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -367,7 +407,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#65676B',
   },
-  // --- Uploading Modal ---
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
