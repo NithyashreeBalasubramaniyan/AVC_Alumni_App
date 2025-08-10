@@ -130,7 +130,8 @@ const getAllAlumni = async (req, res) =>{
   try {
     const profile = await prisma.alumni.findMany({select : {
       id: true,
-      name: true,reg_no: true,
+      name: true,
+      reg_no: true,
       ph_no: true,
       mail: true,
       profile_image: true,

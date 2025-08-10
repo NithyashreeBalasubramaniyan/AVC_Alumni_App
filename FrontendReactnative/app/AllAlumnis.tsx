@@ -59,7 +59,7 @@ const MyComponent = () => {
             left={(props) => (
               <Avatar.Image
                 {...props}
-                source={{ uri: `${BASE_URL}/uploads/${item.profile_image}` }}
+                source={{ uri: `${BASE_URL}${item.profile_image}` }}
                 size={45}
               />
             )}
