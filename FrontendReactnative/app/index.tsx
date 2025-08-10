@@ -13,7 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import axios from "axios";
 // Assuming BASE_URL is defined elsewhere, like in a constants file
-import { BASE_URL } from "./constant";
+import  BASE_URL  from "../constants/constant";
 
 type Role = "Student" | "Alumni" | "Teacher";
 
@@ -211,10 +211,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 2,
     borderColor: "transparent",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
     elevation: 8,
   },
   selectedCard: {

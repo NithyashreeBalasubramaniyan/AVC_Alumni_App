@@ -9,7 +9,7 @@ import {
 import { Avatar, Card, IconButton } from "react-native-paper";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import axios from "axios";
-import { BASE_URL } from "./constant";
+import BASE_URL from "../constants/constant";
 import { router } from "expo-router";
 
 interface Alumni {

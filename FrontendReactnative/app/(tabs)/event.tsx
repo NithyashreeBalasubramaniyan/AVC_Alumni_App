@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from './constant';
+import BASE_URL from '../../constants/constant';
 import { router, Href } from 'expo-router';
 
 // --- Constants & Configuration ---
@@ -392,10 +392,7 @@ const styles = StyleSheet.create({
         padding: 15,
         marginBottom: 12,
         elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
     },
     userRow: {
         flexDirection: 'row',
@@ -476,10 +473,7 @@ const styles = StyleSheet.create({
         paddingTop: (Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0) + 20,
         paddingHorizontal: 20,
         elevation: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: -2, height: 0 },
-        shadowOpacity: 0.2,
-        shadowRadius: 5,
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
     },
     drawerHeader: {
         marginBottom: 30,

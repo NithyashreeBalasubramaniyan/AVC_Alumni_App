@@ -19,7 +19,7 @@ import { useRouter } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay } from 'react-native-reanimated';
 import { Feather } from '@expo/vector-icons';
-import { BASE_URL } from "./constant";
+import  BASE_URL  from "../constants/constant";
 
 
 // Define the response interface
@@ -117,7 +117,7 @@ export default function SignInScreen() {
           </Animated.View>
 
           <Animated.View style={[styles.card, cardAnimatedStyle]}>
-            <Image source={require("../assets/Teacher.png")} style={styles.avatar} />
+            <Image source={require("../assets/Teacher.png")} resizeMode="contain" style={styles.avatar} />
             <Text style={styles.loginText}>Teacher Login</Text>
             
             <View style={styles.inputContainer}>
@@ -218,16 +218,12 @@ const createStyles = (width: number, height: number) => StyleSheet.create({
     maxWidth: 400,
     alignItems: "center",
     elevation: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-    shadowOffset: { width: 0, height: 5 },
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
   },
   avatar: {
     width: width * 0.25,
     height: width * 0.25,
     marginBottom: 20,
-    resizeMode: "contain",
   },
   loginText: {
     fontSize: width * 0.065,

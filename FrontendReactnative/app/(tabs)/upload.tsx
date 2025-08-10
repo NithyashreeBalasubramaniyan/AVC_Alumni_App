@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import { BASE_URL } from './constant';
+import BASE_URL from '../../constants/constant';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeIn, FadeInUp, Layout } from 'react-native-reanimated';
 
@@ -189,8 +189,8 @@ const PostScreen: React.FC = () => {
                 style={styles.avatar}
               />
               <View>
-                <Text style={styles.name}>{userInfo.name}</Text>
-                <Text style={styles.role}>{userInfo.job_role}</Text>
+                <Text style={styles.name}>{userInfo?.name ? userInfo.name : "User"}</Text>
+                <Text style={styles.role}>{userInfo?.job_role ? userInfo.job_role : "-----"}</Text>
               </View>
             </View>
             <TouchableOpacity
@@ -317,10 +317,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
     elevation: 5,
   },
   // --- NEW: Styles for Category Selector ---
@@ -339,10 +336,7 @@ const styles = StyleSheet.create({
   },
   categoryButtonActive: {
     backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
     elevation: 3,
   },
   categoryButtonText: {

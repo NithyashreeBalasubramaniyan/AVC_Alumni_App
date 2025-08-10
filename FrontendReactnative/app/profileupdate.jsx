@@ -17,7 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 import * as ImagePicker from 'expo-image-picker';
-import { BASE_URL } from "./constant"; // Replace with your actual backend URL
+import { BASE_URL } from "../constants/constant"; // Replace with your actual backend URL
 import { SegmentedButtons, RadioButton } from 'react-native-paper';
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -408,13 +408,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 20,
     width: "100%",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
     elevation: 5,
   },
   buttonText: {

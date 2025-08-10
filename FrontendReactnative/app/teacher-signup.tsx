@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BASE_URL } from "./constant";
+import BASE_URL from "../constants/constant";
 import {
   View,
   Text,
@@ -122,7 +122,7 @@ export default function SignupScreen() {
 
         {/* Form Card */}
         <View style={styles.card}>
-          <Image source={require("../assets/Teacher.png")} style={styles.avatar} />
+          <Image source={require("../assets/Teacher.png")} resizeMode="contain" style={styles.avatar} />
           <Text style={styles.heading}>Signup</Text>
 
           {/* Render text inputs */}
@@ -225,15 +225,12 @@ const styles = StyleSheet.create({
     marginTop: 30,
     width: "100%",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
     elevation: 5,
   },
   avatar: {
     width: 120,
     height: 120,
-    resizeMode: "contain",
     marginBottom: 15,
   },
   heading: {

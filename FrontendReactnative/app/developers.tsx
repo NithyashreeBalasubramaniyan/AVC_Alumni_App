@@ -221,10 +221,7 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: 'center',
     margin: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
     elevation: 8,
   },
   mentorCard: {
