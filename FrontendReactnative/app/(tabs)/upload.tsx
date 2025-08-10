@@ -185,7 +185,7 @@ const PostScreen: React.FC = () => {
           <Animated.View entering={FadeInUp.duration(500)} style={styles.headerContainer}>
             <View style={styles.profileContainer}>
               <Image
-                source={{ uri: `${BASE_URL}${userInfo.profile_image}` }}
+                source={{ uri: userInfo?.profile_image ? `${BASE_URL}${userInfo.profile_image}` : 'https://i.pravatar.cc/100'} }
                 style={styles.avatar}
               />
               <View>
