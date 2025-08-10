@@ -40,7 +40,7 @@ const PostScreen: React.FC = () => {
   const [category, setCategory] = useState<PostCategory>('post');
   const MAX_CAPTION_LENGTH = 500;
 
-  // --- 1. Token Loading (No changes) ---
+  
   useEffect(() => {
     const loadToken = async () => {
       try {
@@ -61,7 +61,7 @@ const PostScreen: React.FC = () => {
     loadToken();
   }, []);
 
-  // --- 2. Image Picker Permissions (No changes) ---
+  
   const requestStoragePermission = async (): Promise<boolean> => {
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -76,7 +76,7 @@ const PostScreen: React.FC = () => {
     return true;
   };
 
-  // --- 3. Image Selection Logic (No changes) ---
+
   const selectImage = async () => {
     const hasPermission = await requestStoragePermission();
     if (!hasPermission) return;
