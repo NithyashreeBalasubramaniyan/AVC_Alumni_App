@@ -190,7 +190,7 @@ const PostScreen: React.FC = () => {
               />
               <View>
                 <Text style={styles.name}>{userInfo?.name ? userInfo.name : "User"}</Text>
-                <Text style={styles.role}>{userInfo?.job_role ? userInfo.job_role : "-----"}</Text>
+                <Text style={styles.role}>{userInfo?.job_role ? userInfo.job_role : "-----"}</Text> 
               </View>
             </View>
             <TouchableOpacity

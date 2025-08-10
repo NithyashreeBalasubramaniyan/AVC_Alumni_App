@@ -1,4 +1,5 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import * as ImagePicker from "expo-image-picker";
 import {
   View,
   Text,
@@ -10,17 +11,33 @@ import {
   Platform,
   StyleSheet,
   Dimensions,
-  Alert
+  Alert,
 } from "react-native";
 import RNPickerSelect from "react-native-picker-select";
-import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import * as ImagePicker from 'expo-image-picker';
-import { BASE_URL } from "../constants/constant"; // Replace with your actual backend URL
-import { SegmentedButtons, RadioButton } from 'react-native-paper';
+import BASE_URL from "../constants/constant";
+import { Divider, SegmentedButtons } from "react-native-paper";
 
 const { height: screenHeight } = Dimensions.get("window");
+
+// Define the form data type
+type FormDataType = {
+  name: string;
+  email: string;
+  linkedin: string;
+  company: string;
+  jobRole: string;
+  experience: string | null;
+  technologies: string;
+  batch: string | null;
+  gender: string | null;
+  id: string;
+  role: string;
+  bio: string;
+  profileImage: string | null;
+};
 
 export default function UpdateProfile() {
   const nameRef = useRef<TextInput>(null);
@@ -29,44 +46,47 @@ export default function UpdateProfile() {
   const companyRef = useRef<TextInput>(null);
   const roleRef = useRef<TextInput>(null);
   const techRef = useRef<TextInput>(null);
-  const bioRef = useRef<TextInput>(null); // Ref for Bio
+  const bioRef = useRef<TextInput>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     name: "",
     email: "",
     linkedin: "",
     company: "",
     jobRole: "",
-    experience: "",
+    experience: null,
     technologies: "",
-    batch: "",
-    gender: "",
+    batch: null,
+    gender: null,
     id: "",
     role: "",
-    bio: "", // Added bio
-    profileImage: null, // To store image URI
+    bio: "",
+    profileImage: null,
   });
 
-  const handleChange = (field, value) => {
+  const handleChange = (field: keyof FormDataType, value: string | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+  let result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ['images'], // Use an array with the string 'images'
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 1,
+  });
 
-    if (!result.canceled) {
-      handleChange("profileImage", result.assets[0].uri);
-    }
-  };
+  if (!result.canceled) {
+    handleChange("profileImage", result.assets[0].uri);
+  }
+};
 
   const handleSubmit = async () => {
     if (!formData.id || !formData.role) {
-      console.error("Cannot update profile: User ID or Role is missing.", formData);
+      console.error(
+        "Cannot update profile: User ID or Role is missing.",
+        formData
+      );
       Alert.alert(
         "Error",
         "Could not update profile because essential user information is missing. Please try logging out and logging back in."
@@ -74,56 +94,65 @@ export default function UpdateProfile() {
       return;
     }
 
-    // Use FormData for multipart request (if image is being uploaded)
     const payload = new FormData();
-    payload.append('id', formData.id);
-    payload.append('role', formData.role);
-    payload.append('Linkedin_id', formData.linkedin);
-    payload.append('Experience', formData.experience);
-    payload.append('Gender', formData.gender);
-    payload.append('Company', formData.company);
-    payload.append('job_role', formData.jobRole);
-    payload.append('Bio', formData.bio); // Append bio
+    payload.append("id", formData.id);
+    payload.append("role", formData.role);
+    payload.append("Linkedin_id", formData.linkedin);
+    payload.append("Experience", formData.experience || "");
+    payload.append("Gender", formData.gender || "");
+    payload.append("Company", formData.company);
+    payload.append("job_role", formData.jobRole);
+    payload.append("Bio", formData.bio);
 
-    // Append image if it has been changed
-    if (formData.profileImage && formData.profileImage.startsWith('file://')) {
-        const uriParts = formData.profileImage.split('.');
-        const fileType = uriParts[uriParts.length - 1];
-        payload.append('profile_image', {
-            uri: formData.profileImage,
-            name: `photo.${fileType}`,
-            type: `image/${fileType}`,
-        });
+    if (formData.profileImage && formData.profileImage.startsWith("file://")) {
+      const uriParts = formData.profileImage.split(".");
+      const fileType = uriParts[uriParts.length - 1];
+      payload.append("profile_image", {
+        uri: formData.profileImage,
+        name: `photo.${fileType}`,
+        type: `image/${fileType}`,
+      } as any); // 'as any' to satisfy TS for FormData append
     }
-
 
     console.log("Sending this payload to backend:", payload);
 
     try {
-        const response = await axios.patch(`${BASE_URL}/api/user/update-profile`, payload, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        console.log("Update successful:", response.data);
-        Alert.alert("Success", "Your profile has been updated successfully!");
-    } catch (error) {
-        const errorMessage = error.response?.data?.message || "An unexpected error occurred.";
-        console.error("Error updating profile:", error.response?.data || error.message);
-        Alert.alert("Update Failed", errorMessage);
+      const response = await axios.patch(
+        `${BASE_URL}/api/user/update-profile`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("Update successful:", response.data);
+      Alert.alert("Success", "Your profile has been updated successfully!");
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "An unexpected error occurred.";
+      console.error(
+        "Error updating profile:",
+        error.response?.data || error.message
+      );
+      Alert.alert("Update Failed", errorMessage);
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const loadProfileData = async () => {
       try {
-        const storedToken = await AsyncStorage.getItem('token');
+        const storedToken = await AsyncStorage.getItem("token");
         if (!storedToken) {
-          console.warn('⚠️ No token found in AsyncStorage. User might not be logged in.');
+          console.warn(
+            "⚠️ No token found in AsyncStorage. User might not be logged in."
+          );
           return;
         }
 
-        const response = await axios.post(`${BASE_URL}/api/user/profile`, { token: storedToken });
+        const response = await axios.post(`${BASE_URL}/api/user/profile`, {
+          token: storedToken,
+        });
 
         if (response.data.success) {
           const data = response.data.data;
@@ -134,26 +163,34 @@ export default function UpdateProfile() {
             email: data.mail || "",
             linkedin: data.Linkedin_id || "",
             company: data.Company || "",
-            jobRole: data.role === 'student' ? "Student" : data.job_role || "",
-            experience: data.Experience || "",
-            gender: data.Gender || "",
+            jobRole: data.role === "student" ? "Student" : data.job_role || "",
+            experience: data.Experience || null,
+            gender: data.Gender || null,
             id: data.id,
             role: data.role,
             bio: data.Bio || "",
-            profileImage: data.profile_image ? `${BASE_URL}${data.profile_image}` : null,
+            profileImage: data.profile_image
+              ? `${BASE_URL}${data.profile_image}`
+              : null,
             technologies: "",
-            batch: "",
+            batch: null,
           });
-          console.log('✅ Profile data loaded into form');
+          console.log("✅ Profile data loaded into form");
         } else {
-            console.error('Profile fetch failed:', response.data.message);
-            Alert.alert("Error", "Failed to load your profile data. Please try again later.");
+          console.error("Profile fetch failed:", response.data.message);
+          Alert.alert(
+            "Error",
+            "Failed to load your profile data. Please try again later."
+          );
         }
-      } catch (error) {
+      } catch (error: any) {
         if (axios.isAxiosError(error)) {
-          console.error('❌ Axios error fetching profile:', error.response?.data || error.message);
+          console.error(
+            "❌ Axios error fetching profile:",
+            error.response?.data || error.message
+          );
         } else {
-          console.error('❌ Unknown error fetching profile:', error);
+          console.error("❌ Unknown error fetching profile:", error);
         }
         Alert.alert("Error", "An error occurred while fetching your profile.");
       }
@@ -161,6 +198,29 @@ export default function UpdateProfile() {
 
     loadProfileData();
   }, []);
+
+  const experienceButtons = ["Fresher", "1 year", "2 years", "3+ years"].map(
+    (val) => ({
+      value: val,
+      label: val,
+      style:
+        formData.experience === val ? { backgroundColor: "#d1e1ffff" } : undefined,
+    })
+  );
+
+  const genderButtons = ["Male", "Female"].map((val) => ({
+    value: val,
+    label: val,
+    style:
+      formData.gender === val ? { backgroundColor: "#d1e1ffff" } : undefined,
+  }));
+
+  const batchItems = [];
+for (let startYear = 2010; startYear <= 2028; startYear++) {
+  const endYear = startYear + 4;
+  const label = `${startYear}-${endYear}`;
+  batchItems.push({ label, value: label });
+}
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -172,13 +232,17 @@ export default function UpdateProfile() {
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <TouchableOpacity onPress={pickImage}>
             <Image
-              source={{ uri: formData.profileImage || 'https://placehold.co/100x100/387bff/FFFFFF?text=User' }}
+              source={{
+                uri:
+                  formData.profileImage ||
+                  "https://placehold.co/100x100/387bff/FFFFFF?text=User",
+              }}
               style={styles.avatar}
             />
           </TouchableOpacity>
-           <TouchableOpacity onPress={pickImage}>
-              <Text style={styles.uploadText}>Upload Picture</Text>
-            </TouchableOpacity>
+          <TouchableOpacity onPress={pickImage}>
+            <Text style={styles.uploadText}>Upload Picture</Text>
+          </TouchableOpacity>
 
           <TextInput
             ref={nameRef}
@@ -228,7 +292,7 @@ export default function UpdateProfile() {
             style={styles.input}
             returnKeyType="next"
             onSubmitEditing={() => bioRef.current?.focus()}
-            editable={formData.role !== 'student'}
+            editable={formData.role !== "student"}
           />
 
           <TextInput
@@ -243,42 +307,12 @@ export default function UpdateProfile() {
           />
 
           <Text style={styles.label}>Experience</Text>
-          <SegmentedButtons style={{marginBottom: 12,}}
-  value={formData.experience}
-  onValueChange={(value) => handleChange("experience", value)}
-  buttons={[
-    {
-      value: 'Fresher',
-      label: 'Fresher',
-      style: formData.experience === 'Fresher' && {
-        backgroundColor: '#d1e1ffff', // light blue
-      },
-    },
-    {
-      value: '1 year',
-      label: '1 year',
-      style: formData.experience === '1 year' && {
-        backgroundColor: '#d1e1ffff',
-      },
-    },
-    {
-      value: '2 years',
-      label: '2 years',
-      style: formData.experience === '2 years' && {
-        backgroundColor: '#d1e1ffff',
-      },
-    },
-    {
-      value: '3+ years',
-      label: '3+ years',
-      style: formData.experience === '3+ years' && {
-        backgroundColor: '#d1e1ffff',
-      },
-    },
-  ]}
-/>
-
-
+          <SegmentedButtons
+            style={{ marginBottom: 12 }}
+            value={formData.experience || "null"}
+            onValueChange={(value) => handleChange("experience", value)}
+            buttons={experienceButtons}
+          />
 
           <TextInput
             ref={techRef}
@@ -295,37 +329,21 @@ export default function UpdateProfile() {
               onValueChange={(value) => handleChange("batch", value)}
               value={formData.batch}
               placeholder={{ label: "Select Batch", value: null }}
-              items={[
-                { label: "2024", value: "2024" },
-                { label: "2025", value: "2025" },
-                { label: "2026", value: "2026" },
-                { label: "2027", value: "2027" },
-              ]}
+              items={batchItems}
               style={pickerStyles}
               useNativeAndroidPickerStyle={false}
               Icon={() => <Text style={styles.icon}>▼</Text>}
             />
           </View>
-          
 
           <Text style={styles.label}>Gender</Text>
           <SegmentedButtons
-  value={formData.gender}
-  onValueChange={(value) => handleChange("gender", value)}
-  buttons={[
-    {
-      value: 'Male',
-      label: 'Male',
-      style: formData.gender === 'Male' && { backgroundColor: '#d1e1ffff' },
-    },
-    {
-      value: 'Female',
-      label: 'Female',
-      style: formData.gender === 'Female' && { backgroundColor: '#d1e1ffff' },
-    }
-  ]}
-/>
+            value={formData.gender || "null"}
+            onValueChange={(value) => handleChange("gender", value)}
+            buttons={genderButtons}
+          />
 
+          <Divider></Divider>
 
           <TouchableOpacity style={styles.button} onPress={handleSubmit}>
             <Text style={styles.buttonText}>Update Profile</Text>
@@ -354,13 +372,13 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: "#e0e0e0",
     marginBottom: 8,
   },
   uploadText: {
-    color: '#387bff',
+    color: "#387bff",
     marginBottom: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   input: {
     width: "100%",
@@ -372,11 +390,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     backgroundColor: "white",
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   bioInput: {
-    height: 100, // Taller for multiline
-    textAlignVertical: 'top', // Align text to the top
+    height: 100,
+    textAlignVertical: "top",
     paddingTop: 12,
   },
   label: {
@@ -385,7 +403,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     marginTop: 8,
     fontSize: 14,
-    color: '#555',
+    color: "#555",
   },
   pickerWrapper: {
     width: "100%",
@@ -394,6 +412,8 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     justifyContent: "center",
     height: 48,
+    borderWidth: 1,
+    borderColor: "#ccc",
   },
   icon: {
     fontSize: 16,
@@ -406,9 +426,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#387bff",
     paddingVertical: 14,
     borderRadius: 8,
-    marginTop: 20,
+    marginTop: 40,
+    zIndex: 99,
     width: "100%",
-    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
     elevation: 5,
   },
   buttonText: {
@@ -433,7 +453,7 @@ const pickerStyles = StyleSheet.create({
     fontSize: 16,
   },
   placeholder: {
-    color: '#9EA0A4',
+    color: "#9EA0A4",
     fontSize: 16,
   },
   iconContainer: {
