@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import { BASE_URL } from '../../constant';
+import { BASE_URL } from '../constant';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeIn, FadeInUp, Layout } from 'react-native-reanimated';
 
