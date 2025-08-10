@@ -13,18 +13,17 @@
       "supportsTablet": true
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/applogo.png",
-        "resizeMode": "cover",
-        "backgroundColor": "#ffffff"
-      },
-      "permissions": [
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
-      ],
-      "edgeToEdgeEnabled": true,
-      "package": "com.karthikrishna.AVCCollegeConnectsUs"
-    },
+  "adaptiveIcon": {
+    "foregroundImage": "./assets/applogo.png",
+    "backgroundColor": "#ffffff"
+  },
+  "permissions": [
+    "READ_EXTERNAL_STORAGE",
+    "WRITE_EXTERNAL_STORAGE"
+  ],
+  "edgeToEdgeEnabled": true,
+  "package": "com.karthikrishna.AVCCollegeConnectsUs"
+},
     "splash": {
       "image": "./assets/applogo.png",
       "resizeMode": "cover",
