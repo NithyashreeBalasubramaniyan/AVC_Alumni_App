@@ -69,7 +69,6 @@ const getPost = async (req, res) => {
 // Get Posts by ID
 const getPostById = async (req, res) => {
   const id = parseInt(req.params.id, 10);
-  console.log(id)
   try {
     const profile = await prisma.post.findUnique({
       where: {

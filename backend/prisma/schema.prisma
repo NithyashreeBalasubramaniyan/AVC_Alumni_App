@@ -33,6 +33,7 @@ model alumni {
   job_role      String?
   Linkedin_id   String?
   profile_image String?
+  Batch         String?
   Experience    String?
   Bio           String?
   Gender        String?
@@ -62,6 +63,7 @@ model Student {
   mail          String
   password      String
   job_role      String?
+  Batch         String?
   Linkedin_id   String?
   Experience    String?
   Gender        String?
@@ -98,6 +100,7 @@ model Teacher {
   Experience    String?
   Gender        String?
   Bio           String?
+  Batch         String?
   Company       String?
   profile_image String?
   is_verified   Boolean  @default(false)

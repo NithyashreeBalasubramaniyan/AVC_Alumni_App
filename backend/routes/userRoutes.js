@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { updateUserProfile, getProfileByRegNo } = require('../controllers/userController');
+const { updateUserProfile, getProfileByRegNo, getAllAlumni, getAlumniById } = require('../controllers/userController');
 const multer = require('multer');
 
 const storage = multer.diskStorage({
@@ -15,5 +15,9 @@ router.patch('/update-profile', upload.single('profile_image'), updateUserProfil
 
 // GET profile by reg no
 router.post('/profile', getProfileByRegNo);
+
+router.get('/alumni', getAllAlumni)
+
+router.get("/alumni-profile/:id", getAlumniById)
 
 module.exports = router;

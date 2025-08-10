@@ -85,6 +85,7 @@ export default function SignInScreen() {
       );
       if (response.data.success) {
         await AsyncStorage.setItem('token', response.data.data.token);
+        await AsyncStorage.setItem('role', "alumni");
         Alert.alert("Login Successful", "Welcome back!");
         router.replace({ pathname: '/profile', params: { reg_no: registerNumber } });
       }

@@ -19,7 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay, FadeInUp } from 'react-native-reanimated';
-
+import { Divider } from 'react-native-paper';
 import { BASE_URL } from "@/constant";
 
 const { width } = Dimensions.get("window");
@@ -87,6 +87,9 @@ const AnimatedPostItem = ({ item, index }: { item: Post, index: number }) => {
 };
 
 
+
+
+
 const ProfileScreen = () => {
   const router = useRouter();
   const { reg_no } = useLocalSearchParams<{ reg_no?: string }>();
@@ -94,6 +97,22 @@ const ProfileScreen = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'posts' | 'about'>('posts');
   const [refreshing, setRefreshing] = useState(false);
+  const [isAlumni, setIsAlumni] = useState<boolean>(false);
+
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      try {
+        const value = await AsyncStorage.getItem("role");
+        setIsAlumni(value === "alumni");
+      } catch (error) {
+        console.error("Failed to fetch role from AsyncStorage:", error);
+      } finally {
+        console.log("isAlumni loaded:", isAlumni);
+      }
+    };
+    fetchRole();
+  }, []);
 
   const profileCardAnimation = useSharedValue(0);
 
@@ -192,8 +211,17 @@ const ProfileScreen = () => {
             style={styles.profileImage}
         />
         <Text style={styles.name}>{student.name}</Text>
-        <Text style={styles.regNo}>@{student.reg_no}</Text>
+        <Text style={styles.regNo}>{`@${student.reg_no}`}</Text>
         <Text style={styles.bio}>{student.Bio}</Text>
+        <Divider />
+        {isAlumni && <TouchableOpacity 
+            style={styles.enhanceButton}
+            onPress={() => router.push({ pathname: "../AllAlumnis"})}
+        >
+            <FontAwesome name="link" size={19} color="#fff" />
+            <Text style={styles.enhanceButtonText}>View Alumni</Text>
+        </TouchableOpacity>}
+        <Divider />
     </Animated.View>
   );
 
@@ -211,9 +239,10 @@ const ProfileScreen = () => {
             style={styles.enhanceButton}
             onPress={() => router.push({ pathname: "../profileupdate", params: { reg_no: reg_no ?? student.reg_no } })}
         >
-            <FontAwesome name="pencil" size={16} color="#fff" />
+            <FontAwesome name="pencil" size={19} color="#fff" />
             <Text style={styles.enhanceButtonText}>Edit Profile</Text>
         </TouchableOpacity>
+        
         {/* <TouchableOpacity 
             style={styles.enhanceButton}
             onPress={() => router.push({ pathname: "/(EditPost)" })}
@@ -384,7 +413,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
     borderRadius: 8,
     backgroundColor: theme.colors.primary,
   },

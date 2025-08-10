@@ -126,7 +126,69 @@ const getProfileByRegNo = async (req, res) => {
     }
 };
 
+const getAllAlumni = async (req, res) =>{
+  try {
+    const profile = await prisma.alumni.findMany({select : {
+      id: true,
+      name: true,reg_no: true,
+      ph_no: true,
+      mail: true,
+      profile_image: true,
+      Experience: true,
+      Bio: true,
+      Company: true,
+      Batch: true
+    }})
+    res.status(200).json({data: profile, success: true, message: "get all alumni"})
+  } catch (error) {
+    res.status(404).json({success: false, message: "cannot get all alumni"})
+  }
+}
+
+const getAlumniById = async (req, res) =>{
+  const id = parseInt(req.params.id, 10);
+  try {
+   const response = await prisma.alumni.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        reg_no: true,
+        mail: true,
+        job_role: true,
+        Company: true,
+        profile_image: true,
+        Linkedin_id: true,
+        Experience: true,
+        Gender: true,
+        Bio: true,
+        Post: {
+          select: {
+            id: true,
+            caption: true,
+            image: true,
+            createdAt: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
+      },
+    });
+
+    if (!response) {
+      return res.status(404).json({ success: false, message: "Alumni not found" });
+    }
+    res.status(200).json({ data: response, success: true, message: id})
+  } catch (error) {
+    res.status(404).json({success: false, message: "cannot get all alumni"})
+  }
+}
+
+
 module.exports = {
   updateUserProfile,
   getProfileByRegNo,
+  getAllAlumni,
+  getAlumniById
 };

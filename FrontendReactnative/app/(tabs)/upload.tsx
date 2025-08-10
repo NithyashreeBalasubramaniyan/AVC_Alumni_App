@@ -11,6 +11,7 @@ import {
   Platform,
   KeyboardAvoidingView,
   ScrollView,
+  StatusBar,
   Modal, // To create a loading overlay
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -240,6 +241,7 @@ const PostScreen: React.FC = () => {
           </Animated.View>
         </View>
       </ScrollView>
+      <StatusBar barStyle={"dark-content"}></StatusBar>
     </KeyboardAvoidingView>
   );
 };

@@ -1,16 +1,27 @@
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { withLayoutContext } from 'expo-router';
-import { Entypo, FontAwesome } from '@expo/vector-icons';
-import { BackHandler, ToastAndroid, StyleSheet } from 'react-native';
-import React, {  useRef } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
-import { COLORS } from '../constants/theme';
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { withLayoutContext } from "expo-router";
+import { Entypo, FontAwesome } from "@expo/vector-icons";
+import {
+  BackHandler,
+  ToastAndroid,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Text,
+} from "react-native";
+import React, { useRef, useEffect, useState, JSX } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { COLORS } from "../constants/theme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Tab = createMaterialTopTabNavigator();
 const Tabs = withLayoutContext(Tab.Navigator);
 
-export default function TabsLayout() {
-  const backPressedOnce = useRef(false);
+export default function TabsLayout(): JSX.Element {
+
+  const backPressedOnce = useRef<boolean>(false);
+  
+  
 
   useFocusEffect(
     React.useCallback(() => {
@@ -19,25 +30,20 @@ export default function TabsLayout() {
           BackHandler.exitApp();
           return true;
         }
-
         backPressedOnce.current = true;
-        ToastAndroid.show('Press back again to exit', ToastAndroid.SHORT);
-
-        setTimeout(() => {
-          backPressedOnce.current = false;
-        }, 2000);
-
+        ToastAndroid.show("Press back again to exit", ToastAndroid.SHORT);
+        setTimeout(() => (backPressedOnce.current = false), 2000);
         return true;
       };
 
       const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
+        "hardwareBackPress",
         backAction
       );
-
       return () => backHandler.remove();
     }, [])
   );
+
 
   return (
     <Tabs
@@ -79,6 +85,7 @@ export default function TabsLayout() {
           ),
         }}
       />
+      
     </Tabs>
   );
 }
@@ -94,6 +101,6 @@ const styles = StyleSheet.create({
   },
   tabBarLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
