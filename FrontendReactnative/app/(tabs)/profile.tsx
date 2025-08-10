@@ -308,8 +308,8 @@ const ProfileScreen = () => {
             />
         }
     ><StatusBar
-              barStyle="light-content" // or "light-content" depending on your background
-              backgroundColor="#f5f5f5" // match your SafeArea background
+              barStyle="light-content" 
+              backgroundColor="#f5f5f5" 
       />
       
       {renderProfileHeader()}

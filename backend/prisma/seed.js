@@ -30,7 +30,7 @@ async function main() {
       mail: `existing.student${i}@example.com`,
     });
   }
-  await prisma.existingStudent.createMany({ data: existingStudents });
+  await prisma.existingStudent.createMany({ data: existingStudents, skipDuplicates: true });
   console.log('Created 10 existing students.');
 
   // ----------------------------------------------------------------
@@ -46,7 +46,7 @@ async function main() {
       mail: `existing.teacher${i}@example.com`,
     });
   }
-  await prisma.existingTeacher.createMany({ data: existingTeachers });
+  await prisma.existingTeacher.createMany({ data: existingTeachers , skipDuplicates: true});
   console.log('Created 10 existing teachers.');
 
   // ----------------------------------------------------------------
@@ -63,7 +63,7 @@ async function main() {
       mail: `existing.alumni${i}@example.com`,
     });
   }
-  await prisma.existingalumni.createMany({ data: existingAlumni });
+  await prisma.existingalumni.createMany({ data: existingAlumni, skipDuplicates: true });
   console.log('Created 10 existing alumni.');
 
   // ----------------------------------------------------------------
@@ -87,7 +87,7 @@ async function main() {
       is_verified: true,
     });
   }
-  await prisma.student.createMany({ data: studentProfiles });
+  await prisma.student.createMany({ data: studentProfiles, skipDuplicates: true });
   console.log('Created 5 student profiles.');
 
   // ----------------------------------------------------------------
@@ -110,7 +110,7 @@ async function main() {
       is_verified: true,
     });
   }
-  await prisma.teacher.createMany({ data: teacherProfiles });
+  await prisma.teacher.createMany({ data: teacherProfiles, skipDuplicates: true });
   console.log('Created 5 teacher profiles.');
 
   // ----------------------------------------------------------------
@@ -135,7 +135,7 @@ async function main() {
       is_verified: true,
     });
   }
-  await prisma.alumni.createMany({ data: alumniProfiles });
+  await prisma.alumni.createMany({ data: alumniProfiles , skipDuplicates: true});
   console.log('Created 5 alumni profiles.');
 
   console.log('Database seeding completed successfully!');
