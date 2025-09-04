@@ -7,13 +7,13 @@ async function main() {
   // ----------------------------------------------------------------
   // Deleting in a specific order to respect relationships
   console.log('Deleting existing data...');
-  await prisma.post.deleteMany();
-  await prisma.student.deleteMany();
-  await prisma.teacher.deleteMany();
-  await prisma.alumni.deleteMany();
-  await prisma.existingStudent.deleteMany();
-  await prisma.existingTeacher.deleteMany();
-  await prisma.existingalumni.deleteMany();
+  await prisma.Post.deleteMany();
+  await prisma.Student.deleteMany();
+  await prisma.Teacher.deleteMany();
+  await prisma.Alumni.deleteMany();
+  await prisma.ExistingStudent.deleteMany();
+  await prisma.ExistingTeacher.deleteMany();
+  await prisma.ExistingAlumni.deleteMany();
   console.log('All data deleted.');
 
   // ----------------------------------------------------------------
@@ -30,7 +30,10 @@ async function main() {
       mail: `existing.student${i}@example.com`,
     });
   }
-  await prisma.existingStudent.createMany({ data: existingStudents, skipDuplicates: true });
+  await prisma.ExistingStudent.createMany({
+    data: existingStudents,
+    skipDuplicates: true,
+  });
   console.log('Created 10 existing students.');
 
   // ----------------------------------------------------------------
@@ -46,7 +49,10 @@ async function main() {
       mail: `existing.teacher${i}@example.com`,
     });
   }
-  await prisma.existingTeacher.createMany({ data: existingTeachers , skipDuplicates: true});
+  await prisma.ExistingTeacher.createMany({
+    data: existingTeachers,
+    skipDuplicates: true,
+  });
   console.log('Created 10 existing teachers.');
 
   // ----------------------------------------------------------------
@@ -57,13 +63,15 @@ async function main() {
   for (let i = 1; i <= 10; i++) {
     existingAlumni.push({
       name: `Existing Alumni ${i}`,
-      // Updated to generate a 12-digit registration number
       reg_no: `8203181040${String(i).padStart(2, '0')}`,
       dob: new Date(`1996-01-${String(i).padStart(2, '0')}`),
       mail: `existing.alumni${i}@example.com`,
     });
   }
-  await prisma.existingalumni.createMany({ data: existingAlumni, skipDuplicates: true });
+  await prisma.ExistingAlumni.createMany({
+    data: existingAlumni,
+    skipDuplicates: true,
+  });
   console.log('Created 10 existing alumni.');
 
   // ----------------------------------------------------------------
@@ -74,20 +82,20 @@ async function main() {
   for (let i = 1; i <= 5; i++) {
     studentProfiles.push({
       name: `Existing Student ${i}`,
-      // Updated to generate a 12-digit registration number
       reg_no: `8203231040${String(i).padStart(2, '0')}`,
       ph_no: `987654321${i}`,
       dob: new Date(`2001-01-${String(i).padStart(2, '0')}`),
       mail: `existing.student${i}@example.com`,
       password: `$2a$10$5Se05lyzSpqMWYQEY5ItiuNHWj.65l1eWD0i/NZ.57FoZm0cwTYYq`,
-      job_role: 'Software Engineer Intern',
-      Company: 'Startup Inc.',
-      profile_image: `/uploads/${i}.jpg`,
-      Gender: i % 2 === 0 ? 'Female' : 'Male',
-      is_verified: true,
+      
+
+    
     });
   }
-  await prisma.student.createMany({ data: studentProfiles, skipDuplicates: true });
+  await prisma.Student.createMany({
+    data: studentProfiles,
+    skipDuplicates: true,
+  });
   console.log('Created 5 student profiles.');
 
   // ----------------------------------------------------------------
@@ -110,7 +118,10 @@ async function main() {
       is_verified: true,
     });
   }
-  await prisma.teacher.createMany({ data: teacherProfiles, skipDuplicates: true });
+  await prisma.Teacher.createMany({
+    data: teacherProfiles,
+    skipDuplicates: true,
+  });
   console.log('Created 5 teacher profiles.');
 
   // ----------------------------------------------------------------
@@ -121,7 +132,6 @@ async function main() {
   for (let i = 1; i <= 5; i++) {
     alumniProfiles.push({
       name: `Existing Alumni ${i}`,
-      // Updated to generate a 12-digit registration number
       reg_no: `8203181040${String(i).padStart(2, '0')}`,
       ph_no: `765432109${i}`,
       dob: new Date(`1996-01-${String(i).padStart(2, '0')}`),
@@ -135,7 +145,10 @@ async function main() {
       is_verified: true,
     });
   }
-  await prisma.alumni.createMany({ data: alumniProfiles , skipDuplicates: true});
+  await prisma.Alumni.createMany({
+    data: alumniProfiles,
+    skipDuplicates: true,
+  });
   console.log('Created 5 alumni profiles.');
 
   console.log('Database seeding completed successfully!');

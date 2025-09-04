@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Existingalumni {
+model ExistingAlumni {
   name       String
   reg_no     String   @id
   dob        DateTime
@@ -22,7 +16,7 @@ model Existingalumni {
   updated_at DateTime @updatedAt
 }
 
-model alumni {
+model Alumni {
   id            Int      @id @default(autoincrement())
   name          String
   reg_no        String   @unique
@@ -42,7 +36,7 @@ model alumni {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  Post Post[]
+  posts Post[]
 }
 
 model ExistingStudent {
@@ -55,27 +49,16 @@ model ExistingStudent {
 }
 
 model Student {
-  id            Int      @id @default(autoincrement())
-  name          String
-  reg_no        String   @unique
-  ph_no         String
-  dob           DateTime
-  mail          String
-  password      String
-  job_role      String?
-  Batch         String?
-  Linkedin_id   String?
-  Experience    String?
-  Gender        String?
-  Company       String?
-  profile_image String?
-  Bio           String?
-  allpost       String?
-  is_verified   Boolean  @default(false)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
-
-  Post Post[]
+  id           Int           @id @default(autoincrement())
+  name         String
+  reg_no       String        @unique
+  ph_no        String
+  mail         String
+  dob          DateTime
+  password     String
+  canPost      Boolean       @default(false)
+  posts        Post[]
+  postRequests PostRequest[]
 }
 
 model ExistingTeacher {
@@ -106,24 +89,9 @@ model Teacher {
   is_verified   Boolean  @default(false)
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
-  Post          Post[]
+
+  posts Post[]
 }
-
-// model Profile {
-//   id     Int     @id @default(autoincrement())
-//   bio    String?
-//   avatar String?
-//   role   Role
-
-//   student   Student? @relation(fields: [studentId], references: [id])
-//   studentId Int?
-
-//   alumni   alumni? @relation(fields: [alumniId], references: [id])
-//   alumniId Int?
-
-//   teacher   Teacher? @relation(fields: [teacherId], references: [id])
-//   teacherId Int?
-// }
 
 model Post {
   id        Int      @id @default(autoincrement())
@@ -136,11 +104,19 @@ model Post {
   student   Student? @relation(fields: [studentId], references: [id])
   studentId Int?
 
-  alumni   alumni? @relation(fields: [alumniId], references: [id])
+  alumni   Alumni? @relation(fields: [alumniId], references: [id])
   alumniId Int?
 
   teacher   Teacher? @relation(fields: [teacherId], references: [id])
   teacherId Int?
+}
+
+model PostRequest {
+  id        Int      @id @default(autoincrement())
+  student   Student  @relation(fields: [studentId], references: [id])
+  studentId Int
+  status    String   @default("PENDING") // PENDING / APPROVED / REJECTED
+  createdAt DateTime @default(now())
 }
 
 enum Role {

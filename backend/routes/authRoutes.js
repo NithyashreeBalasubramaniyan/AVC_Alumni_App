@@ -1,32 +1,18 @@
+// routes/authRoutes.js
 const express = require('express');
 const { body } = require('express-validator');
-const {
-  registeralumni,
-  loginalumni,
-
-  registerStudent,
-  loginStudent,
-
-  registerTeacher,
-  loginTeacher,
-  
-  verify,
-  
-  createPost,
-  getProfile
-} = require('../controllers/authController');
+const authController = require('../controllers/authController');
 const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Validation rules
 const registerValidation = [
   body('name').notEmpty().trim().withMessage('Name is required'),
   body('reg_no').notEmpty().trim().withMessage('Register number is required'),
-  body('ph_no').isMobilePhone().withMessage('Valid phone number is required'),
-  body('dob').isDate().withMessage('Valid date of birth is required'),
-  body('mail').notEmpty().trim().withMessage('Valid mail is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+  body('ph_no').notEmpty().trim().withMessage('Phone is required'),
+  body('dob').notEmpty().withMessage('DOB is required'),
+  body('mail').isEmail().withMessage('Valid email required'),
+  body('password').isLength({ min: 6 }).withMessage('Password min 6 chars')
 ];
 
 const loginValidation = [
@@ -34,29 +20,17 @@ const loginValidation = [
   body('password').notEmpty().withMessage('Password is required')
 ];
 
-// const verificationValidation = [
-//   body('name').notEmpty().trim().withMessage('Name is required'),
-//   body('reg_no').notEmpty().trim().withMessage('Register number is required'),
-//   body('ph_no').notEmpty().trim().withMessage('Phone number is required'),
-//   body('dob').isDate().withMessage('Valid date of birth is required'),
-//   body('password').notEmpty().withMessage('Password is required')
-// ];
+router.post('/register/alumni', registerValidation, authController.registeralumni);
+router.post('/login/alumni', loginValidation, authController.loginalumni);
 
-//alumni Routes
-router.post('/register/alumni', registerValidation, registeralumni);
-router.post('/login/alumni', loginValidation, loginalumni);
+router.post('/register/student', registerValidation, authController.registerStudent);
+router.post('/login/student', loginValidation, authController.loginStudent);
 
-//Student Routes
-router.post('/register/student', registerValidation, registerStudent);
-router.post('/login/student', loginValidation, loginStudent);
+router.post('/register/teacher', registerValidation, authController.registerTeacher);
+router.post('/login/teacher', loginValidation, authController.loginTeacher);
 
-//teacher Routes
-router.post('/register/teacher', registerValidation, registerTeacher);
-router.post('/login/teacher', loginValidation, loginTeacher);
+// protected
+router.get('/profile', authenticateToken, authController.getProfile);
+router.post('/verify', authenticateToken, authController.verify);
 
-
-router.get('/profile', authenticateToken, getProfile);
-
-router.post('/verify', verify);
-
-module.exports = router; 
+module.exports = router;

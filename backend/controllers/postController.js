@@ -10,77 +10,69 @@ const decodeToken = (token) => {
   }
 };
 
+// Create post
 const createPost = async (req, res) => {
   try {
-    const { caption, token, category } = req.body;
-    const file = req.file;
+    const { caption, category } = req.body;
+    const role = req.user?.role;
+    const userId = req.user?.userId;
 
-  
-    const jwtResult = decodeToken(token);
-    if (!jwtResult) {
-      return res.status(401).json({ message: 'Invalid or expired token' });
+    if (!role || !userId) {
+      return res.status(401).json({ error: "Unauthorized: Missing user details" });
     }
 
-    const imagePath = file ? `/${file.path.replace(/\\/g, '/')}` : null;
-    const role = jwtResult.role.toUpperCase();
-    const userId = jwtResult.userId;
+    // If student, check permission
+    if (role.toUpperCase() === "STUDENT") {
+      const student = await prisma.student.findUnique({ where: { id: userId } });
+      if (!student || !student.canPost) {
+        return res.status(403).json({ error: "Permission denied. Request not approved yet." });
+      }
+    }
 
-    let studentId = null, alumniId = null, teacherId = null;
-    if (role === 'STUDENT') studentId = userId;
-    else if (role === 'ALUMNI') alumniId = userId;
-    else if (role === 'TEACHER') teacherId = userId;
+    const image = req.file ? `/${req.file.path.replace(/\\/g, '/')}` : null;
 
     const post = await prisma.post.create({
-      data: { caption, category, image: imagePath, role, studentId, alumniId, teacherId },
-      include: {
-        student: { select: { name: true, job_role: true } },
-        alumni: { select: { name: true, job_role: true } },
-        teacher: { select: { name: true, job_role: true } },
-      },
-    });
-
-    const userName = post.student?.name || post.alumni?.name || post.teacher?.name || "Unknown";
-    res.status(201).json({ ...post, userName });
-  } catch (err) {
-    if (err instanceof multer.MulterError) {
-      return res.status(400).json({ message: err.message });
-    }
-    res.status(500).json({ message: err.message || 'An error occurred' });
-  }
-};
-
-
-// Get All Posts
-const getPost = async (req, res) => {
-  try {
-    const allPost = await prisma.post.findMany({
-        where: {
-          category: "post"
-        },
-      include: {
-        student: { select: { name: true, job_role: true, profile_image: true } },
-        alumni: { select: { name: true, job_role: true, profile_image: true } },
-        teacher: { select: { name: true, job_role: true, profile_image: true } },
+      data: {
+        caption,
+        image,
+        category,
+        role,
+        studentId: role.toUpperCase() === "STUDENT" ? userId : null,
+        alumniId: role.toUpperCase() === "ALUMNI" ? userId : null,
+        teacherId: role.toUpperCase() === "TEACHER" ? userId : null,
       }
     });
-    res.status(200).json({ success: true, message: "get all posts", data: allPost });
+
+    res.json({ success: true, data: post });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// Get All Posts
+// Get all posts
+const getPosts = async (req, res) => {
+  try {
+    const posts = await prisma.post.findMany({
+      include: { student: true, alumni: true, teacher: true },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json({ success: true, data: posts });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get All Event Posts
 const getPostEvent = async (req, res) => {
   try {
     const allPost = await prisma.post.findMany({
-        where: {
-          category: "event"
-        },
+      where: { category: "event" },
       include: {
         student: { select: { name: true, job_role: true, profile_image: true } },
         alumni: { select: { name: true, job_role: true, profile_image: true } },
         teacher: { select: { name: true, job_role: true, profile_image: true } },
-      }
+      },
+      orderBy: { createdAt: 'desc' }
     });
     res.status(200).json({ success: true, message: "get all posts", data: allPost });
   } catch (err) {
@@ -88,89 +80,20 @@ const getPostEvent = async (req, res) => {
   }
 };
 
-// Get Posts by ID
+// Get Post by ID
 const getPostById = async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
     const profile = await prisma.post.findUnique({
-      where: {
-        id: id
-      },
+      where: { id },
       include: {
-        student: { select: {
-          id: true,
-          name: true,
-          reg_no: true,
-          mail: true,
-          job_role: true,
-          Company: true,
-          profile_image: true,
-          Linkedin_id: true,
-          Experience: true,
-          Gender: true,
-          Bio: true,
-          Post: {
-            select: {
-              id: true,
-              caption: true,
-              image: true,
-              createdAt: true,
-            },
-            orderBy: {
-              createdAt: 'desc',
-            },
-          },
-        } },
-        alumni: { select: {
-          id: true,
-          name: true,
-          reg_no: true,
-          mail: true,
-          job_role: true,
-          Company: true,
-          profile_image: true,
-          Linkedin_id: true,
-          Experience: true,
-          Gender: true,
-          Bio: true,
-          Post: {
-            select: {
-              id: true,
-              caption: true,
-              image: true,
-              createdAt: true,
-            },
-            orderBy: {
-              createdAt: 'desc',
-            },
-          },
-        } },
-        teacher: { select: {
-          id: true,
-          name: true,
-          reg_no: true,
-          mail: true,
-          job_role: true,
-          Company: true,
-          profile_image: true,
-          Linkedin_id: true,
-          Experience: true,
-          Gender: true,
-          Bio: true,
-          Post: {
-            select: {
-              id: true,
-              caption: true,
-              image: true,
-              createdAt: true,
-            },
-            orderBy: {
-              createdAt: 'desc',
-            },
-          },
-        } },
+        student: true,
+        alumni: true,
+        teacher: true
       }
     });
+    if (!profile) return res.status(404).json({ error: "Post not found" });
+
     res.status(200).json({ success: true, message: "profile fetched", data: profile });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -182,14 +105,12 @@ const updatePost = async (req, res) => {
   try {
     const { postId, caption, token } = req.body;
     const file = req.file;
-
-    // Validate postId
     const postIdInt = parseInt(postId);
+
     if (isNaN(postIdInt)) {
       return res.status(400).json({ message: 'Invalid post ID' });
     }
 
-    // Decode and validate JWT
     const jwtResult = decodeToken(token);
     if (!jwtResult) {
       return res.status(401).json({ message: 'Invalid or expired token' });
@@ -198,13 +119,9 @@ const updatePost = async (req, res) => {
     const userId = jwtResult.userId;
     const role = jwtResult.role?.toUpperCase();
 
-    // Fetch the post
     const existingPost = await prisma.post.findUnique({ where: { id: postIdInt } });
-    if (!existingPost) {
-      return res.status(404).json({ message: 'Post not found' });
-    }
+    if (!existingPost) return res.status(404).json({ message: 'Post not found' });
 
-    // Authorization check
     const unauthorized =
       (role === 'STUDENT' && existingPost.studentId !== userId) ||
       (role === 'ALUMNI' && existingPost.alumniId !== userId) ||
@@ -214,21 +131,15 @@ const updatePost = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized to update this post' });
     }
 
-    // Handle image update
     const updatedImage = file ? `/${file.path.replace(/\\/g, '/')}` : existingPost.image;
 
-    // Update post
     const updatedPost = await prisma.post.update({
       where: { id: postIdInt },
       data: {
         caption: caption || existingPost.caption,
         image: updatedImage
       },
-      include: {
-        student: { select: { name: true, job_role: true } },
-        alumni: { select: { name: true, job_role: true } },
-        teacher: { select: { name: true, job_role: true } },
-      },
+      include: { student: true, alumni: true, teacher: true }
     });
 
     res.status(200).json({ success: true, data: updatedPost });
@@ -238,19 +149,16 @@ const updatePost = async (req, res) => {
   }
 };
 
-
 // Delete Post
 const deletePost = async (req, res) => {
   try {
     const { postId, token } = req.body;
-
-    // Validate postId
     const postIdInt = parseInt(postId);
+
     if (isNaN(postIdInt)) {
       return res.status(400).json({ message: 'Invalid post ID' });
     }
 
-    // Decode token
     const jwtResult = decodeToken(token);
     if (!jwtResult) {
       return res.status(401).json({ message: 'Invalid or expired token' });
@@ -259,13 +167,9 @@ const deletePost = async (req, res) => {
     const userId = jwtResult.userId;
     const role = jwtResult.role?.toUpperCase();
 
-    // Fetch the post
     const existingPost = await prisma.post.findUnique({ where: { id: postIdInt } });
-    if (!existingPost) {
-      return res.status(404).json({ message: 'Post not found' });
-    }
+    if (!existingPost) return res.status(404).json({ message: 'Post not found' });
 
-    // Authorization check
     const unauthorized =
       (role === 'STUDENT' && existingPost.studentId !== userId) ||
       (role === 'ALUMNI' && existingPost.alumniId !== userId) ||
@@ -275,9 +179,7 @@ const deletePost = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized to delete this post' });
     }
 
-    // Delete post
     await prisma.post.delete({ where: { id: postIdInt } });
-
     res.status(200).json({ success: true, message: 'Post deleted successfully' });
 
   } catch (err) {
@@ -285,12 +187,10 @@ const deletePost = async (req, res) => {
   }
 };
 
-//search posts
-
+// Search posts
 const searchPosts = async (req, res) => {
   try {
     const { name } = req.query;
-
     if (!name) {
       return res.status(400).json({ message: 'Search term is required' });
     }
@@ -303,14 +203,8 @@ const searchPosts = async (req, res) => {
           { teacher: { name: { contains: name, mode: 'insensitive' } } },
         ],
       },
-      include: {
-        student: true,
-        alumni: true,
-        teacher: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      include: { student: true, alumni: true, teacher: true },
+      orderBy: { createdAt: 'desc' },
     });
 
     res.json({ data: posts });
@@ -320,7 +214,12 @@ const searchPosts = async (req, res) => {
   }
 };
 
-
-
-
-module.exports = { createPost, getPost, updatePost, deletePost,searchPosts,getPostById, getPostEvent };
+module.exports = {
+  createPost,
+  getPosts,
+  getPostEvent,
+  getPostById,
+  updatePost,
+  deletePost,
+  searchPosts
+};
