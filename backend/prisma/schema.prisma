@@ -57,6 +57,7 @@ model Student {
   dob          DateTime
   password     String
   canPost      Boolean       @default(false)
+  department   String        // 🔹 NEW FIELD
   posts        Post[]
   postRequests PostRequest[]
 }
@@ -87,6 +88,7 @@ model Teacher {
   Company       String?
   profile_image String?
   is_verified   Boolean  @default(false)
+  department    String   // 🔹 NEW FIELD
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
@@ -112,11 +114,12 @@ model Post {
 }
 
 model PostRequest {
-  id        Int      @id @default(autoincrement())
-  student   Student  @relation(fields: [studentId], references: [id])
-  studentId Int
-  status    String   @default("PENDING") // PENDING / APPROVED / REJECTED
-  createdAt DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  student    Student  @relation(fields: [studentId], references: [id])
+  studentId  Int
+  department String   // 🔹 NEW FIELD (copied from student at request creation)
+  status     String   @default("PENDING") // PENDING / APPROVED / REJECTED
+  createdAt  DateTime @default(now())
 }
 
 enum Role {
